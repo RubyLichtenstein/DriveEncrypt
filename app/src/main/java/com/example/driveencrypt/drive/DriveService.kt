@@ -23,7 +23,6 @@ import java.util.concurrent.Callable
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
-
 class DriveService(private val drive: Drive) {
     private val mExecutor: Executor =
         Executors.newSingleThreadExecutor()
@@ -48,7 +47,7 @@ class DriveService(private val drive: Drive) {
     fun uploadFile(
         toUploadFile: java.io.File,
         folderId: String,
-        fileName: String = "photo.jpg"
+        fileName: String
     ) = execute {
         val mediaContent = FileContent("image/jpeg", toUploadFile)
 
@@ -79,17 +78,16 @@ class DriveService(private val drive: Drive) {
 
                 if (file.exists()) {
                     Log.d("TAG", "file downloaded")
-
-                    val fileDecrypted = java.io.File(
-                        Environment.getExternalStorageDirectory(),
-                        System.currentTimeMillis().toString() + "_downloaded_decrypted.jpg"
-                    )
+                    callback(file)
+//                    val fileDecrypted = java.io.File(
+//                        Environment.getExternalStorageDirectory(),
+//                        System.currentTimeMillis().toString() + "_downloaded_decrypted.jpg"
+//                    )
 
                     try {
-                        CryptoUtils.decrypt(CryptoUtils.key, file, fileDecrypted)
-                        callback(fileDecrypted)
+//                        CryptoUtils.decrypt(CryptoUtils.key, file, fileDecrypted)
                     } catch (e: Exception) {
-                        Log.e("TAG", e.message, e)
+                        Log.e("TAG", e.message + " id: " + fileId, e)
                     }
                 } else {
                     Log.d("TAG", "file downloaded not exist")
@@ -98,8 +96,7 @@ class DriveService(private val drive: Drive) {
     }
 
     fun files(
-        query: String,
-        resultCallback: (List<File>) -> Unit
+        query: String
     ) = execute {
         var pageToken: String? = null
         val allFiles = mutableListOf<File>()
@@ -117,10 +114,10 @@ class DriveService(private val drive: Drive) {
             pageToken = result.nextPageToken
         } while (pageToken != null)
 
-        resultCallback(allFiles)
+        allFiles
     }
 
-    fun downloadFile(
+    private fun downloadFile(
         fileSaveLocation: java.io.File?,
         fileId: String?
     ) = execute {

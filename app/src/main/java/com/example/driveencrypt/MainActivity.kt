@@ -1,16 +1,12 @@
 package com.example.driveencrypt
 
 import android.Manifest
-import android.app.Activity
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import com.example.driveencrypt.crypto.CryptoUtils
 import com.example.driveencrypt.drive.DriveService
-import com.example.driveencrypt.gallery.ImageGalleryHelper
+import com.example.driveencrypt.gallery.GalleryActivity
 import com.example.driveencrypt.signin.GoogleSignInHelper
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
