@@ -1,9 +1,9 @@
-package com.example.driveencrypt
+package com.example.driveencrypt.files
 
 import android.content.Context
 import java.io.File
 
-class FilesProvider {
+class LocalFilesProvider {
     fun getLocalFilesPaths(context: Context): List<String> {
         return context
             .filesDir
@@ -23,5 +23,12 @@ class FilesProvider {
                 it.write(file.readBytes())
             }
 
+    }
+
+    fun deleteAllFiles(context: Context) {
+        context
+            .filesDir
+            .listFiles()
+            .forEach { it.delete() }
     }
 }

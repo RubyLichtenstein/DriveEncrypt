@@ -4,11 +4,10 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.driveencrypt.FilesProvider
+import com.example.driveencrypt.files.LocalFilesProvider
 import com.example.driveencrypt.KeyValueStorage
 import com.example.driveencrypt.R
 import com.example.driveencrypt.drive.DriveService
@@ -22,7 +21,8 @@ class GalleryActivity : AppCompatActivity() {
     private lateinit var driveService: DriveService
     private val imageGalleryHelper = ImageGalleryHelper()
     private val folderName = "encrypt"
-    private val filesProvider = FilesProvider()
+    private val filesProvider =
+        LocalFilesProvider()
 
     private lateinit var viewAdapter: GalleryAdapter
 
@@ -37,19 +37,41 @@ class GalleryActivity : AppCompatActivity() {
             adapter = viewAdapter
         }
 
-        val localFilesPaths = filesProvider.getLocalFilesPaths(this)
-        localFilesPaths.forEach {
-            viewAdapter.data.add(it)
-            viewAdapter.notifyItemInserted(viewAdapter.itemCount)
+        delete.setOnClickListener {
+            filesProvider.deleteAllFiles(this)
         }
+
+        refresh.setOnClickListener {
+            showAllLocalFiles()
+        }
+
+        refresh_remote.setOnClickListener {
+            downloadImages(viewAdapter)
+        }
+
+        showAllLocalFiles()
 
         driveService = DriveService.getDriveService(this)!!
 
         initFolderId()
-//        downloadImages(viewAdapter)
 
         pick_file.setOnClickListener {
             imageGalleryHelper.selectImage(this)
+        }
+    }
+
+    private fun showAllLocalFiles() {
+        val localFilesPaths = filesProvider.getLocalFilesPaths(this)
+
+        viewAdapter.data.clear()
+
+        if (localFilesPaths.isEmpty()) {
+            viewAdapter.notifyDataSetChanged()
+        }
+
+        localFilesPaths.forEach {
+            viewAdapter.data.add(it)
+            viewAdapter.notifyItemInserted(viewAdapter.itemCount)
         }
     }
 
@@ -87,7 +109,11 @@ class GalleryActivity : AppCompatActivity() {
             .addOnSuccessListener {
                 for (file in it) {
                     driveService
-                        .downloadAndDecrypt(this, file.id) {
+                        .downloadFile(
+                            this,
+                            file.id,
+                            file.name
+                        ) {
                             viewAdapter.data.add(it.absolutePath)
                             viewAdapter.notifyDataSetChanged()
                         }
@@ -113,28 +139,28 @@ class GalleryActivity : AppCompatActivity() {
     }
 
     private fun handleImagePath(picturePath: String) {
-        progress.visibility = View.VISIBLE
+//        progress.visibility = View.VISIBLE
 
         viewAdapter.data.add(picturePath)
         viewAdapter.notifyItemInserted(viewAdapter.itemCount)
 
         val file = File(picturePath)
-        val fileName = file.name;
+        val fileName = file.name
 
         filesProvider.saveToLocalFiles(this, file)
 
-//        val folderId1 =
-//            KeyValueStorage.getFolderId(this)
-//
-//        if (folderId1 == null) {
-//            Log.e("TAG", "folderId == null")
-//            return
-//        }
-//
-//        driveService
-//            .uploadFile(file, folderId1, fileName)
-//            .addOnCompleteListener {
+        val folderId1 =
+            KeyValueStorage.getFolderId(this)
+
+        if (folderId1 == null) {
+            Log.e("TAG", "folderId == null")
+            return
+        }
+
+        driveService
+            .uploadFile(file, folderId1, fileName)
+            .addOnCompleteListener {
 //                progress.visibility = View.INVISIBLE
-//            }
+            }
     }
 }

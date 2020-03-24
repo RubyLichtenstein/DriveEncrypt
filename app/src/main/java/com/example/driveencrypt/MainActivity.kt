@@ -50,6 +50,10 @@ class MainActivity : AppCompatActivity() {
         if (googleSignInHelper.isUserSignedIn(this)) {
             startActivity(Intent(this, GalleryActivity::class.java))
         }
+
+        galleryButton.setOnClickListener {
+            startActivity(Intent(this, GalleryActivity::class.java))
+        }
     }
 
     override fun onStart() {

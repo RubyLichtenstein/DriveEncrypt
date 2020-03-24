@@ -2,9 +2,7 @@ package com.example.driveencrypt.drive
 
 import android.app.Activity
 import android.content.Context
-import android.os.Environment
 import android.util.Log
-import com.example.driveencrypt.crypto.CryptoUtils
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.tasks.Task
@@ -62,20 +60,19 @@ class DriveService(private val drive: Drive) {
             .execute()
     }
 
-    fun downloadAndDecrypt(
+    fun downloadFile(
         activity: Activity,
         fileId: String,
+        fileName: String,
         callback: (java.io.File) -> Unit
     ) {
         val file = java.io.File(
             activity.filesDir,
-            System.currentTimeMillis().toString() + "_downloaded_encrypted.jpg"
+            fileName
         )
 
         downloadFile(file, fileId)
             .addOnCompleteListener {
-                Log.d("TAG", file.toString())
-
                 if (file.exists()) {
                     Log.d("TAG", "file downloaded")
                     callback(file)
@@ -83,7 +80,6 @@ class DriveService(private val drive: Drive) {
 //                        Environment.getExternalStorageDirectory(),
 //                        System.currentTimeMillis().toString() + "_downloaded_decrypted.jpg"
 //                    )
-
                     try {
 //                        CryptoUtils.decrypt(CryptoUtils.key, file, fileDecrypted)
                     } catch (e: Exception) {
@@ -92,6 +88,16 @@ class DriveService(private val drive: Drive) {
                 } else {
                     Log.d("TAG", "file downloaded not exist")
                 }
+            }
+    }
+
+    fun isFileExist(
+        name: String,
+        callback: (Boolean) -> Unit
+    ) {
+        files("name = '$name'")
+            .addOnSuccessListener {
+                callback(it.isNotEmpty())
             }
     }
 
