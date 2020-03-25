@@ -1,6 +1,5 @@
 package com.example.driveencrypt.drive
 
-import android.app.Activity
 import android.content.Context
 import android.util.Log
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -23,7 +22,7 @@ import java.util.concurrent.Executors
 
 class DriveService(private val drive: Drive) {
     private val mExecutor: Executor =
-        Executors.newSingleThreadExecutor()
+        Executors.newCachedThreadPool()
 
     fun createFolder(name: String) = execute {
         val fileMetadata =
@@ -60,37 +59,6 @@ class DriveService(private val drive: Drive) {
             .execute()
     }
 
-    fun downloadFile(
-        activity: Activity,
-        fileId: String,
-        fileName: String,
-        callback: (java.io.File) -> Unit
-    ) {
-        val file = java.io.File(
-            activity.filesDir,
-            fileName
-        )
-
-        downloadFile(file, fileId)
-            .addOnCompleteListener {
-                if (file.exists()) {
-                    Log.d("TAG", "file downloaded")
-                    callback(file)
-//                    val fileDecrypted = java.io.File(
-//                        Environment.getExternalStorageDirectory(),
-//                        System.currentTimeMillis().toString() + "_downloaded_decrypted.jpg"
-//                    )
-                    try {
-//                        CryptoUtils.decrypt(CryptoUtils.key, file, fileDecrypted)
-                    } catch (e: Exception) {
-                        Log.e("TAG", e.message + " id: " + fileId, e)
-                    }
-                } else {
-                    Log.d("TAG", "file downloaded not exist")
-                }
-            }
-    }
-
     fun isFileExist(
         name: String,
         callback: (Boolean) -> Unit
@@ -123,9 +91,9 @@ class DriveService(private val drive: Drive) {
         allFiles
     }
 
-    private fun downloadFile(
-        fileSaveLocation: java.io.File?,
-        fileId: String?
+    fun downloadFile(
+        fileSaveLocation: java.io.File,
+        fileId: String
     ) = execute {
         val outputStream: OutputStream = FileOutputStream(fileSaveLocation)
 

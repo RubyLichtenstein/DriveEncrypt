@@ -3,6 +3,7 @@ package com.example.driveencrypt.gallery
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.os.FileObserver
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
@@ -11,6 +12,8 @@ import com.example.driveencrypt.files.LocalFilesProvider
 import com.example.driveencrypt.KeyValueStorage
 import com.example.driveencrypt.R
 import com.example.driveencrypt.drive.DriveService
+import com.example.driveencrypt.drive.log
+import com.example.driveencrypt.files.FilesManager
 import kotlinx.android.synthetic.main.activity_gallery_1.*
 import java.io.File
 
@@ -21,14 +24,17 @@ class GalleryActivity : AppCompatActivity() {
     private lateinit var driveService: DriveService
     private val imageGalleryHelper = ImageGalleryHelper()
     private val folderName = "encrypt"
-    private val filesProvider =
-        LocalFilesProvider()
+    private val filesProvider = LocalFilesProvider()
 
     private lateinit var viewAdapter: GalleryAdapter
+    private lateinit var fileObserver: FileObserver
+    private lateinit var filesManager: FilesManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_gallery_1)
+        driveService = DriveService.getDriveService(this)!!
+        filesManager = FilesManager(driveService)
 
         viewAdapter = GalleryAdapter()
         recyclerView = my_recycler_view.apply {
@@ -46,32 +52,36 @@ class GalleryActivity : AppCompatActivity() {
         }
 
         refresh_remote.setOnClickListener {
-            downloadImages(viewAdapter)
+            filesManager
+                .downloadFilesFromDriveAndSaveToLocal(this) {
+                    Log.d("TAG", """downloaded: ${it.name}""")
+                    addFileToGallery(it)
+                }
         }
 
         showAllLocalFiles()
-
-        driveService = DriveService.getDriveService(this)!!
 
         initFolderId()
 
         pick_file.setOnClickListener {
             imageGalleryHelper.selectImage(this)
         }
+
+        fileObserver = filesProvider.observeLocal(this)
+        fileObserver.startWatching()
+    }
+
+    private fun addFileToGallery(file: File) {
+        viewAdapter.add(file.absolutePath)
     }
 
     private fun showAllLocalFiles() {
         val localFilesPaths = filesProvider.getLocalFilesPaths(this)
 
-        viewAdapter.data.clear()
-
-        if (localFilesPaths.isEmpty()) {
-            viewAdapter.notifyDataSetChanged()
-        }
+        viewAdapter.clear()
 
         localFilesPaths.forEach {
-            viewAdapter.data.add(it)
-            viewAdapter.notifyItemInserted(viewAdapter.itemCount)
+            viewAdapter.add(it)
         }
     }
 
@@ -103,24 +113,6 @@ class GalleryActivity : AppCompatActivity() {
         }
     }
 
-    private fun downloadImages(viewAdapter: GalleryAdapter) {
-        driveService
-            .files("mimeType='image/jpeg'")
-            .addOnSuccessListener {
-                for (file in it) {
-                    driveService
-                        .downloadFile(
-                            this,
-                            file.id,
-                            file.name
-                        ) {
-                            viewAdapter.data.add(it.absolutePath)
-                            viewAdapter.notifyDataSetChanged()
-                        }
-                }
-            }
-    }
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode != Activity.RESULT_CANCELED) {
@@ -129,9 +121,10 @@ class GalleryActivity : AppCompatActivity() {
                     imageGalleryHelper.onResultFromGallery(
                         data,
                         contentResolver
-                    ) { path ->
-                        Log.d("TAG", path)
-                        handleImagePath(path)
+                    ) { paths ->
+                        paths.forEach {
+                            handleImagePath(it)
+                        }
                     }
                 }
             }
@@ -139,10 +132,7 @@ class GalleryActivity : AppCompatActivity() {
     }
 
     private fun handleImagePath(picturePath: String) {
-//        progress.visibility = View.VISIBLE
-
-        viewAdapter.data.add(picturePath)
-        viewAdapter.notifyItemInserted(viewAdapter.itemCount)
+        viewAdapter.add(picturePath)
 
         val file = File(picturePath)
         val fileName = file.name
@@ -161,6 +151,6 @@ class GalleryActivity : AppCompatActivity() {
             .uploadFile(file, folderId1, fileName)
             .addOnCompleteListener {
 //                progress.visibility = View.INVISIBLE
-            }
+            }.log("TA", "uploadFile($file, $folderId1, $fileName)")
     }
 }
