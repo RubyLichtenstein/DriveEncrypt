@@ -16,7 +16,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:background="@color/colorAccent"
-        tools:src="@drawable/common_full_open_on_phone"></ImageView>
+        tools:src="@drawable/common_full_open_on_phone" />
 
     <ProgressBar
         android:id="@+id/progress"

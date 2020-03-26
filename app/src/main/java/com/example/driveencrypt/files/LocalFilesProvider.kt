@@ -12,6 +12,13 @@ class LocalFilesProvider {
             .map { it.path }
     }
 
+    fun getLocalFilesNames(context: Context): List<String> {
+        return context
+            .filesDir
+            .listFiles()
+            .map { it.name }
+    }
+
     fun observeLocal(context: Context): FileObserver {
         return object : FileObserver(context.filesDir.path) {
             override fun onEvent(event: Int, path: String?) {

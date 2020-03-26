@@ -8,12 +8,12 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.driveencrypt.files.LocalFilesProvider
 import com.example.driveencrypt.KeyValueStorage
 import com.example.driveencrypt.R
 import com.example.driveencrypt.drive.DriveService
 import com.example.driveencrypt.drive.log
 import com.example.driveencrypt.files.FilesManager
+import com.example.driveencrypt.files.LocalFilesProvider
 import kotlinx.android.synthetic.main.activity_gallery_1.*
 import java.io.File
 
@@ -34,9 +34,14 @@ class GalleryActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_gallery_1)
         driveService = DriveService.getDriveService(this)!!
-        filesManager = FilesManager(driveService)
-
+        filesManager = FilesManager(driveService, filesProvider)
         viewAdapter = GalleryAdapter()
+        viewAdapter.onClick = {
+            val intent = Intent(this, ImageActivity::class.java)
+            intent.putExtra(ImageActivity.ARG_IMAGE_PATH, it.path)
+            startActivity(intent)
+        }
+
         recyclerView = my_recycler_view.apply {
             setHasFixedSize(true)
             layoutManager = GridLayoutManager(this@GalleryActivity, 3)
@@ -57,6 +62,12 @@ class GalleryActivity : AppCompatActivity() {
                     Log.d("TAG", """downloaded: ${it.name}""")
                     addFileToGallery(it)
                 }
+        }
+
+        sync.setOnClickListener {
+            filesManager.syncFiles(this) {
+                Log.d("TAG", it.toString())
+            }
         }
 
         showAllLocalFiles()
@@ -152,5 +163,13 @@ class GalleryActivity : AppCompatActivity() {
             .addOnCompleteListener {
 //                progress.visibility = View.INVISIBLE
             }.log("TA", "uploadFile($file, $folderId1, $fileName)")
+    }
+
+    override fun onBackPressed() {
+        if (supportFragmentManager.fragments.isNotEmpty()) {
+            supportFragmentManager.popBackStack()
+        } else {
+            super.onBackPressed()
+        }
     }
 }
