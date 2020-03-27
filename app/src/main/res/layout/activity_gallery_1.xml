@@ -6,6 +6,21 @@
     android:layout_height="match_parent"
     tools:context=".gallery.GalleryActivity">
 
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_refresh"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/my_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:scrollbars="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/buttons" />
+
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
     <LinearLayout
         android:id="@+id/buttons"
         android:layout_width="wrap_content"
@@ -22,38 +37,8 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <Button
-            android:id="@+id/refresh"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="refresh local"
-            app:layout_constraintStart_toEndOf="@+id/delete"
-            app:layout_constraintTop_toTopOf="parent"></Button>
-
-        <Button
-            android:id="@+id/refresh_remote"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="refresh remote"
-            app:layout_constraintStart_toEndOf="@+id/delete"
-            app:layout_constraintTop_toTopOf="parent"></Button>
-
-        <Button
-            android:id="@+id/sync"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="sync"
-            app:layout_constraintStart_toEndOf="@+id/delete"
-            app:layout_constraintTop_toTopOf="parent"></Button>
     </LinearLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/my_recycler_view"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:scrollbars="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttons" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/pick_file"

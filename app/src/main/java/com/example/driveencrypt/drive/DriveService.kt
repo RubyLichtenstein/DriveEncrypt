@@ -71,6 +71,10 @@ class DriveService(private val drive: Drive) {
 
     fun allImages() = files("mimeType='image/jpeg'")
 
+    fun files(names: Set<String>) {
+
+    }
+
     fun files(
         query: String
     ) = execute {

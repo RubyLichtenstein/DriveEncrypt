@@ -14,6 +14,7 @@ import com.example.driveencrypt.drive.DriveService
 import com.example.driveencrypt.drive.log
 import com.example.driveencrypt.files.FilesManager
 import com.example.driveencrypt.files.LocalFilesProvider
+import com.google.android.gms.tasks.Tasks
 import kotlinx.android.synthetic.main.activity_gallery_1.*
 import java.io.File
 
@@ -34,10 +35,12 @@ class GalleryActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_gallery_1)
         driveService = DriveService.getDriveService(this)!!
-        filesManager = FilesManager(driveService, filesProvider)
+        filesManager = FilesManager.create(this)
         viewAdapter = GalleryAdapter()
+
         viewAdapter.onClick = {
             val intent = Intent(this, ImageActivity::class.java)
+            intent.putExtra(ImageActivity.ARG_SYNC_STATUS, it.syncStatus)
             intent.putExtra(ImageActivity.ARG_IMAGE_PATH, it.path)
             startActivity(intent)
         }
@@ -52,24 +55,6 @@ class GalleryActivity : AppCompatActivity() {
             filesProvider.deleteAllFiles(this)
         }
 
-        refresh.setOnClickListener {
-            showAllLocalFiles()
-        }
-
-        refresh_remote.setOnClickListener {
-            filesManager
-                .downloadFilesFromDriveAndSaveToLocal(this) {
-                    Log.d("TAG", """downloaded: ${it.name}""")
-                    addFileToGallery(it)
-                }
-        }
-
-        sync.setOnClickListener {
-            filesManager.syncFiles(this) {
-                Log.d("TAG", it.toString())
-            }
-        }
-
         showAllLocalFiles()
 
         initFolderId()
@@ -78,8 +63,27 @@ class GalleryActivity : AppCompatActivity() {
             imageGalleryHelper.selectImage(this)
         }
 
-        fileObserver = filesProvider.observeLocal(this)
-        fileObserver.startWatching()
+        swipe_refresh.setOnRefreshListener {
+            showAllLocalFiles()
+
+            filesManager
+                .downloadNotSyncFiles()
+                .addOnSuccessListener {
+                    var counter = it.size
+                    it.forEach { task ->
+                        task
+                            .addOnSuccessListener {
+                                viewAdapter.add(it.path)
+                            }
+                            .addOnCompleteListener {
+                                counter--
+                                if (counter == 0) {
+                                    swipe_refresh.isRefreshing = false
+                                }
+                            }
+                    }
+                }
+        }
     }
 
     private fun addFileToGallery(file: File) {
@@ -163,13 +167,5 @@ class GalleryActivity : AppCompatActivity() {
             .addOnCompleteListener {
 //                progress.visibility = View.INVISIBLE
             }.log("TA", "uploadFile($file, $folderId1, $fileName)")
-    }
-
-    override fun onBackPressed() {
-        if (supportFragmentManager.fragments.isNotEmpty()) {
-            supportFragmentManager.popBackStack()
-        } else {
-            super.onBackPressed()
-        }
     }
 }

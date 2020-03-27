@@ -13,7 +13,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".gallery.ImageActivity"></activity>
+        <activity
+            android:name=".gallery.ImageActivity"
+            android:theme="@style/Theme.ImageActivity"></activity>
         <activity android:name=".gallery.GalleryActivity" />
         <activity android:name=".MainActivity">
             <intent-filter>

@@ -12,7 +12,6 @@ import com.example.driveencrypt.utils.LocalFilesExecutor
 import com.example.driveencrypt.utils.displayMetrics
 import kotlinx.android.synthetic.main.gallery_list_item.view.*
 
-
 class GalleryAdapter : RecyclerView.Adapter<GalleryAdapter.MyViewHolder>() {
 
     var onClick: ((GalleryItem) -> Unit)? = null
@@ -61,7 +60,7 @@ class GalleryAdapter : RecyclerView.Adapter<GalleryAdapter.MyViewHolder>() {
                             path,
                             "todo",
                             "todo",
-                            FilesManager.DiffResult.Local,
+                            FilesManager.SyncStatus.Local,
                             it
                         )
                     )

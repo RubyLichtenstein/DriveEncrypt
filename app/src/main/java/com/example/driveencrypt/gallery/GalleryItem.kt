@@ -7,6 +7,6 @@ data class GalleryItem(
     val path: String,
     val name: String,
     val src: String,
-    val diffResult: FilesManager.DiffResult,
+    val syncStatus: FilesManager.SyncStatus,
     val bitmap: Bitmap
 )

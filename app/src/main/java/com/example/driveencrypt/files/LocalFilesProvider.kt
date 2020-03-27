@@ -38,7 +38,6 @@ class LocalFilesProvider {
             .use {
                 it.write(file.readBytes())
             }
-
     }
 
     fun deleteAllFiles(context: Context) {
