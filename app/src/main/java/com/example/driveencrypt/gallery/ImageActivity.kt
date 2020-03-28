@@ -6,7 +6,6 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
-import com.bumptech.glide.Glide
 import com.example.driveencrypt.R
 import com.example.driveencrypt.files.FilesManager
 import com.example.driveencrypt.gallery.pager.ImagePagerAdapter

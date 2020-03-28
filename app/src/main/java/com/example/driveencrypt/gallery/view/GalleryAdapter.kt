@@ -1,18 +1,17 @@
 package com.example.driveencrypt.gallery.view
 
-import android.graphics.Bitmap
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import com.example.driveencrypt.R
-import com.example.driveencrypt.gallery.data.GalleryData
 import com.example.driveencrypt.utils.displayMetrics
-import com.google.android.gms.tasks.OnSuccessListener
+import com.facebook.imagepipeline.common.ResizeOptions
+import com.facebook.imagepipeline.request.ImageRequestBuilder
 import kotlinx.android.synthetic.main.gallery_list_item.view.*
+import java.io.File
 
 class GalleryAdapter : BaseGalleryAdapter() {
+    var mResizeOptions: ResizeOptions? = null
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -29,24 +28,18 @@ class GalleryAdapter : BaseGalleryAdapter() {
         return MyViewHolder(rootView)
     }
 
-    var onSuccessListener: OnSuccessListener<Bitmap?> = OnSuccessListener { }
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         val galleryItem = data[position]
-        holder.view.gallery_image.setImageDrawable(null)
+        val uri = Uri.fromFile(File(galleryItem.path))
 
-        onSuccessListener = OnSuccessListener {
-            if (it != null) {
-                Glide
-                    .with(holder.view.gallery_image)
-                    .load(it)
-                    .into(holder.view.gallery_image)
-            }
-        }
+        val imageRequest =
+            ImageRequestBuilder
+                .newBuilderWithSource(uri)
+                .setResizeOptions(mResizeOptions)
+                .build()
 
-        GalleryData
-            .get(galleryItem.path)
-            .addOnSuccessListener(onSuccessListener)
+        holder.view.gallery_image.setImageRequest(imageRequest)
 
         holder.view.setOnClickListener {
             onClick?.invoke(galleryItem)

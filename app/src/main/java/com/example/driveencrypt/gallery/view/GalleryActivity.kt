@@ -16,6 +16,7 @@ import com.example.driveencrypt.files.LocalFilesManager
 import com.example.driveencrypt.gallery.GalleryViewModel
 import com.example.driveencrypt.gallery.ImageActivity
 import com.example.driveencrypt.gallery.ImageGalleryHelper
+import com.facebook.imagepipeline.common.ResizeOptions
 import kotlinx.android.synthetic.main.activity_gallery.*
 import java.io.File
 
@@ -31,6 +32,9 @@ class GalleryActivity : AppCompatActivity() {
     private lateinit var viewAdapter: GalleryAdapter
     lateinit var filesManager: FilesManager
 
+    private val SPAN_COUNT = 3
+    private var mResizeOptions: ResizeOptions? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_gallery)
@@ -41,29 +45,13 @@ class GalleryActivity : AppCompatActivity() {
         val model: GalleryViewModel by viewModels()
         setupViewModel(model)
 
-//        val userManager = UserManager(
-//            filesManager1,
-//            GoogleSignInHelper(this)
-//        )
-
-//        logout.setOnClickListener {
-//            userManager.signOut(this)
-//        }
-
-//        val photoUrl = GoogleSignIn.getLastSignedInAccount(this)?.photoUrl
-//
-//        Glide.with(profile)
-//            .load(photoUrl)
-//            .circleCrop()
-//            .into(profile)
-
         viewAdapter.onClick = {
             val intent = Intent(this, ImageActivity::class.java)
             intent.putExtra(ImageActivity.ARG_IMAGE_PATH, it.path)
             startActivity(intent)
         }
 
-        val gridLayoutManager = GridLayoutManager(this@GalleryActivity, 3)
+        val gridLayoutManager = GridLayoutManager(this@GalleryActivity, SPAN_COUNT)
 
         recyclerView = my_recycler_view.apply {
             setHasFixedSize(true)
@@ -71,14 +59,11 @@ class GalleryActivity : AppCompatActivity() {
             adapter = viewAdapter
         }
 
-        gridLayoutManager.findFirstVisibleItemPosition()
-        gridLayoutManager.findLastVisibleItemPosition()
-
-//        delete.setOnClickListener {
-//            filesManager1.deleteAllLocalFiles(this)
-//        }
-
-//        showAllLocalFiles()
+        recyclerView.addOnLayoutChangeListener { view, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
+            val imageSize = (right - left) / SPAN_COUNT
+            mResizeOptions = ResizeOptions(imageSize, imageSize)
+            viewAdapter.mResizeOptions = mResizeOptions
+        }
 
         initFolderId()
 
