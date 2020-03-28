@@ -31,4 +31,6 @@ class GoogleSignInHelper(private val context: Activity) {
 
     fun isUserSignedIn(context: Context): Boolean =
         GoogleSignIn.getLastSignedInAccount(context) != null
+
+    fun signOut() = googleSignInClient.signOut()
 }

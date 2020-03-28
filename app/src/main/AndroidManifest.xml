@@ -13,10 +13,26 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.example.driveencrypt.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/filepaths" />
+        </provider>
+
+        <activity android:name=".password.PasswordActivity">
+
+        </activity>
         <activity
             android:name=".gallery.ImageActivity"
-            android:theme="@style/Theme.ImageActivity"></activity>
-        <activity android:name=".gallery.GalleryActivity" />
+            android:theme="@style/Theme.ImageActivity" />
+        <activity android:name=".gallery.view.GalleryActivity" />
+        <activity android:name=".applicationlockscreenexample.MainActivity">
+
+        </activity>
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

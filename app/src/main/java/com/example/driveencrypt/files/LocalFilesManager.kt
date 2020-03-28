@@ -4,7 +4,8 @@ import android.content.Context
 import android.os.FileObserver
 import java.io.File
 
-class LocalFilesProvider {
+object LocalFilesManager {
+
     fun getLocalFilesPaths(context: Context): List<String> {
         return context
             .filesDir
@@ -40,7 +41,7 @@ class LocalFilesProvider {
             }
     }
 
-    fun deleteAllFiles(context: Context) {
+    fun deleteAllLocalFiles(context: Context) {
         context
             .filesDir
             .listFiles()

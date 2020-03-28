@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.Log
 import com.example.driveencrypt.KeyValueStorage
 import com.example.driveencrypt.drive.DriveService
-import com.example.driveencrypt.drive.log
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import java.io.File
@@ -12,14 +11,13 @@ import java.io.File
 class FilesManager(
     private var context: Context,
     private val driveService: DriveService,
-    private val localFilesProvider: LocalFilesProvider
+    private val localFilesManager: LocalFilesManager
 ) {
 
     companion object {
         fun create(context: Context): FilesManager {
-            val filesProvider = LocalFilesProvider()
             val driveService = DriveService.getDriveService(context)!!
-            return FilesManager(context, driveService, filesProvider)
+            return FilesManager(context, driveService, LocalFilesManager)
         }
     }
 
@@ -76,7 +74,7 @@ class FilesManager(
             .onSuccessTask {
                 val remoteFileNames: Set<com.google.api.services.drive.model.File> =
                     it.orEmpty().toSet()
-                val localFilesNames = localFilesProvider.getLocalFilesNames(context).toSet()
+                val localFilesNames = localFilesManager.getLocalFilesNames(context).toSet()
                 val syncFilesDiff = syncFilesDiff(localFilesNames, remoteFileNames)
 
                 Tasks.forResult(syncFilesDiff)

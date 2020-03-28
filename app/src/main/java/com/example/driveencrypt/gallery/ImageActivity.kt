@@ -1,14 +1,18 @@
 package com.example.driveencrypt.gallery
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
 import com.bumptech.glide.Glide
 import com.example.driveencrypt.R
 import com.example.driveencrypt.files.FilesManager
+import com.example.driveencrypt.gallery.pager.ImagePagerAdapter
+import com.example.driveencrypt.share.shareImage
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.android.synthetic.main.activity_image.*
-import kotlinx.android.synthetic.main.fragment_image.image
 
 class ImageActivity : AppCompatActivity() {
 
@@ -17,27 +21,47 @@ class ImageActivity : AppCompatActivity() {
         setContentView(R.layout.activity_image)
         val filesManager = FilesManager.create(this)
 
+        val model: GalleryViewModel by viewModels()
+
         val path = intent.getStringExtra(ARG_IMAGE_PATH)
-        val diffResult = intent?.getSerializableExtra(ARG_SYNC_STATUS) as FilesManager.SyncStatus
 
-        Glide
-            .with(image)
-            .load(path)
-            .into(image)
+        setupBottomNavigation(path, filesManager)
 
-        sync_status.text = diffResult.name
+        val imagesPagerAdapter = ImagePagerAdapter()
+        image_pager.adapter = imagesPagerAdapter
 
-        sync_button.setOnClickListener {
-            progress.visibility = View.VISIBLE
-            filesManager
-                .uploadFile(path)
-                ?.addOnSuccessListener {
-                    progress.visibility = View.GONE
+        model.showAllLocalFiles(this)
+        model.localFilesLiveData.observe(this, Observer {
+            imagesPagerAdapter.addAll(it)
+            val index = it.indexOf(path)
+            image_pager.setCurrentItem(index, false)
+        })
+    }
 
-                    Toast
-                        .makeText(this, "file uploaded", Toast.LENGTH_SHORT)
-                        .show()
+    private fun setupBottomNavigation(
+        path: String,
+        filesManager: FilesManager
+    ) {
+        val bottomNavigationView = bottom_navigation as BottomNavigationView
+        bottomNavigationView.setOnNavigationItemReselectedListener {
+            when (it.itemId) {
+                R.id.navigation_home -> {
+                    shareImage(this, path)
                 }
+
+                R.id.upload -> {
+                    progress.visibility = View.VISIBLE
+                    filesManager
+                        .uploadFile(path)
+                        ?.addOnSuccessListener {
+                            progress.visibility = View.GONE
+
+                            Toast
+                                .makeText(this, "file uploaded", Toast.LENGTH_SHORT)
+                                .show()
+                        }
+                }
+            }
         }
     }
 

@@ -1,21 +1,22 @@
-package com.example.driveencrypt.gallery
+package com.example.driveencrypt.gallery.view
 
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.os.FileObserver
-import android.util.Log
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.driveencrypt.KeyValueStorage
 import com.example.driveencrypt.R
 import com.example.driveencrypt.drive.DriveService
-import com.example.driveencrypt.drive.log
 import com.example.driveencrypt.files.FilesManager
-import com.example.driveencrypt.files.LocalFilesProvider
-import com.google.android.gms.tasks.Tasks
-import kotlinx.android.synthetic.main.activity_gallery_1.*
+import com.example.driveencrypt.files.LocalFilesManager
+import com.example.driveencrypt.gallery.GalleryViewModel
+import com.example.driveencrypt.gallery.ImageActivity
+import com.example.driveencrypt.gallery.ImageGalleryHelper
+import kotlinx.android.synthetic.main.activity_gallery.*
 import java.io.File
 
 class GalleryActivity : AppCompatActivity() {
@@ -23,39 +24,61 @@ class GalleryActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
 
     private lateinit var driveService: DriveService
-    private val imageGalleryHelper = ImageGalleryHelper()
+    private val imageGalleryHelper =
+        ImageGalleryHelper()
     private val folderName = "encrypt"
-    private val filesProvider = LocalFilesProvider()
 
     private lateinit var viewAdapter: GalleryAdapter
-    private lateinit var fileObserver: FileObserver
-    private lateinit var filesManager: FilesManager
+    lateinit var filesManager: FilesManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_gallery_1)
+        setContentView(R.layout.activity_gallery)
         driveService = DriveService.getDriveService(this)!!
-        filesManager = FilesManager.create(this)
         viewAdapter = GalleryAdapter()
+        filesManager = FilesManager.create(this)
+
+        val model: GalleryViewModel by viewModels()
+        setupViewModel(model)
+
+//        val userManager = UserManager(
+//            filesManager1,
+//            GoogleSignInHelper(this)
+//        )
+
+//        logout.setOnClickListener {
+//            userManager.signOut(this)
+//        }
+
+//        val photoUrl = GoogleSignIn.getLastSignedInAccount(this)?.photoUrl
+//
+//        Glide.with(profile)
+//            .load(photoUrl)
+//            .circleCrop()
+//            .into(profile)
 
         viewAdapter.onClick = {
             val intent = Intent(this, ImageActivity::class.java)
-            intent.putExtra(ImageActivity.ARG_SYNC_STATUS, it.syncStatus)
             intent.putExtra(ImageActivity.ARG_IMAGE_PATH, it.path)
             startActivity(intent)
         }
 
+        val gridLayoutManager = GridLayoutManager(this@GalleryActivity, 3)
+
         recyclerView = my_recycler_view.apply {
             setHasFixedSize(true)
-            layoutManager = GridLayoutManager(this@GalleryActivity, 3)
+            layoutManager = gridLayoutManager
             adapter = viewAdapter
         }
 
-        delete.setOnClickListener {
-            filesProvider.deleteAllFiles(this)
-        }
+        gridLayoutManager.findFirstVisibleItemPosition()
+        gridLayoutManager.findLastVisibleItemPosition()
 
-        showAllLocalFiles()
+//        delete.setOnClickListener {
+//            filesManager1.deleteAllLocalFiles(this)
+//        }
+
+//        showAllLocalFiles()
 
         initFolderId()
 
@@ -64,40 +87,26 @@ class GalleryActivity : AppCompatActivity() {
         }
 
         swipe_refresh.setOnRefreshListener {
-            showAllLocalFiles()
-
-            filesManager
-                .downloadNotSyncFiles()
-                .addOnSuccessListener {
-                    var counter = it.size
-                    it.forEach { task ->
-                        task
-                            .addOnSuccessListener {
-                                viewAdapter.add(it.path)
-                            }
-                            .addOnCompleteListener {
-                                counter--
-                                if (counter == 0) {
-                                    swipe_refresh.isRefreshing = false
-                                }
-                            }
-                    }
-                }
+            model.refreshFiles(
+                filesManager,
+                this
+            )
         }
     }
 
-    private fun addFileToGallery(file: File) {
-        viewAdapter.add(file.absolutePath)
-    }
-
-    private fun showAllLocalFiles() {
-        val localFilesPaths = filesProvider.getLocalFilesPaths(this)
-
-        viewAdapter.clear()
-
-        localFilesPaths.forEach {
+    private fun setupViewModel(model: GalleryViewModel) {
+        model.showAllLocalFiles(this)
+        model.localFilesLiveData.observe(this, Observer {
+            it.forEach {
+                viewAdapter.add(it)
+            }
+        })
+        model.addFileLiveData.observe(this, Observer {
             viewAdapter.add(it)
-        }
+        })
+        model.refreshLiveData.observe(this, Observer {
+            swipe_refresh.isRefreshing = it
+        })
     }
 
     private fun initFolderId() {
@@ -150,22 +159,8 @@ class GalleryActivity : AppCompatActivity() {
         viewAdapter.add(picturePath)
 
         val file = File(picturePath)
-        val fileName = file.name
 
-        filesProvider.saveToLocalFiles(this, file)
-
-        val folderId1 =
-            KeyValueStorage.getFolderId(this)
-
-        if (folderId1 == null) {
-            Log.e("TAG", "folderId == null")
-            return
-        }
-
-        driveService
-            .uploadFile(file, folderId1, fileName)
-            .addOnCompleteListener {
-//                progress.visibility = View.INVISIBLE
-            }.log("TA", "uploadFile($file, $folderId1, $fileName)")
+        LocalFilesManager.saveToLocalFiles(this, file)
+        filesManager.uploadFile(picturePath)?.addOnSuccessListener { }
     }
 }
