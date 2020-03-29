@@ -142,9 +142,7 @@ class GalleryActivity : AppCompatActivity() {
 
     private fun handleImagePath(picturePath: String) {
         viewAdapter.add(picturePath)
-
         val file = File(picturePath)
-
         LocalFilesManager.saveToLocalFiles(this, file)
         filesManager.uploadFile(picturePath)?.addOnSuccessListener { }
     }

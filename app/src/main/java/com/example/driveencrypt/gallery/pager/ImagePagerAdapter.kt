@@ -9,10 +9,8 @@ import com.example.driveencrypt.gallery.view.BaseGalleryAdapter
 import com.facebook.drawee.backends.pipeline.Fresco
 import com.facebook.drawee.controller.BaseControllerListener
 import com.facebook.imagepipeline.image.ImageInfo
-import com.facebook.imagepipeline.request.ImageRequestBuilder
 import kotlinx.android.synthetic.main.image_pager_list_item.view.*
 import java.io.File
-
 
 class ImagePagerAdapter : BaseGalleryAdapter() {
 

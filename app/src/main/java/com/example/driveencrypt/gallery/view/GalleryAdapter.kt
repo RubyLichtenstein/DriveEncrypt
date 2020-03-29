@@ -28,7 +28,6 @@ class GalleryAdapter : BaseGalleryAdapter() {
         return MyViewHolder(rootView)
     }
 
-
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         val galleryItem = data[position]
         val uri = Uri.fromFile(File(galleryItem.path))
