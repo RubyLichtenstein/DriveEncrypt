@@ -17,8 +17,6 @@ import pub.devrel.easypermissions.EasyPermissions
 
 class MainActivity : AppCompatActivity() {
 
-    var driveService: DriveService? = null
-
     lateinit var googleSignInHelper: GoogleSignInHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -71,22 +69,7 @@ class MainActivity : AppCompatActivity() {
             // a listener.
             val task =
                 GoogleSignIn.getSignedInAccountFromIntent(data)
-            handleSignInResult(task)
-        }
-    }
-
-    private fun handleSignInResult(completedTask: Task<GoogleSignInAccount>) {
-        try {
-            val account =
-                completedTask.getResult(ApiException::class.java)
-
-            // Signed in successfully, show authenticated UI.
-            handleAccount(account)
-        } catch (e: ApiException) {
-            // The ApiException status code indicates the detailed failure reason.
-            // Please refer to the GoogleSignInStatusCodes class reference for more information.
-            Log.w("TAG", "signInResult:failed code=" + e.statusCode)
-            handleAccount(null)
+//            handleSignInResult(task)
         }
     }
 
@@ -95,8 +78,5 @@ class MainActivity : AppCompatActivity() {
             Log.d("TAG", "account is null")
             return
         }
-
-        account_info.text = account.email + account.displayName
-        driveService = DriveService.getDriveService(this)
     }
 }

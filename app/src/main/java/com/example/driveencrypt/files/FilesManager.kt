@@ -10,15 +10,17 @@ import java.io.File
 
 class FilesManager(
     private var context: Context,
-    private val driveService: DriveService,
     private val localFilesManager: LocalFilesManager
 ) {
 
     companion object {
         fun create(context: Context): FilesManager {
-            val driveService = DriveService.getDriveService(context)!!
-            return FilesManager(context, driveService, LocalFilesManager)
+            return FilesManager(context, LocalFilesManager)
         }
+    }
+
+    private val driveService by lazy {
+        DriveService.getDriveService(context)!!
     }
 
     fun downloadNotSyncFiles(): Task<List<Task<File>>> =
@@ -120,5 +122,35 @@ class FilesManager(
             .onSuccessTask {
                 Tasks.forResult(localFile)
             }
+    }
+
+    private val folderName = "encrypt"
+
+    fun initFolderId(context: Context) {
+        val folderId = KeyValueStorage.getFolderId(context)
+        if (folderId == null) {
+            driveService
+                .files("name = '$folderName'")
+                .addOnSuccessListener {
+                    if (it.isEmpty()) {
+                        driveService
+                            .createFolder(folderName)
+                            .addOnCompleteListener {
+                                val folderId1 = it.result?.id
+                                folderId1?.let { it1 ->
+                                    KeyValueStorage.putFolderId(
+                                        context,
+                                        it1
+                                    )
+                                }
+                            }
+                    } else {
+                        KeyValueStorage.putFolderId(
+                            context,
+                            folderId = it.first().id
+                        )
+                    }
+                }
+        }
     }
 }

@@ -79,21 +79,16 @@
                 android:id="@+id/profile"
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
-                android:layout_gravity="right" />
+                android:layout_gravity="right"
+                android:visibility="gone" />
 
             <Button
-                android:id="@+id/logout"
+                android:id="@+id/user_dialog"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_gravity="right"
-                android:text="log out" />
+                android:text="account" />
 
-            <Button
-                android:id="@+id/settings"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_gravity="right"
-                android:text="settings" />
         </androidx.appcompat.widget.Toolbar>
 
     </com.google.android.material.appbar.AppBarLayout>

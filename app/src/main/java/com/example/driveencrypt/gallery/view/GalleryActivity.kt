@@ -16,7 +16,9 @@ import com.example.driveencrypt.files.LocalFilesManager
 import com.example.driveencrypt.gallery.GalleryViewModel
 import com.example.driveencrypt.gallery.ImageActivity
 import com.example.driveencrypt.gallery.ImageGalleryHelper
+import com.example.driveencrypt.signin.GoogleSignInHelper
 import com.facebook.imagepipeline.common.ResizeOptions
+import com.google.android.gms.auth.api.signin.GoogleSignIn
 import kotlinx.android.synthetic.main.activity_gallery.*
 import java.io.File
 
@@ -24,21 +26,19 @@ class GalleryActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
 
-    private lateinit var driveService: DriveService
-    private val imageGalleryHelper =
-        ImageGalleryHelper()
-    private val folderName = "encrypt"
-
+    private val imageGalleryHelper = ImageGalleryHelper()
     private lateinit var viewAdapter: GalleryAdapter
     lateinit var filesManager: FilesManager
 
     private val SPAN_COUNT = 3
     private var mResizeOptions: ResizeOptions? = null
+    private lateinit var googleSignInHelper: GoogleSignInHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_gallery)
-        driveService = DriveService.getDriveService(this)!!
+
+        googleSignInHelper = GoogleSignInHelper(this)
         viewAdapter = GalleryAdapter()
         filesManager = FilesManager.create(this)
 
@@ -65,7 +65,7 @@ class GalleryActivity : AppCompatActivity() {
             viewAdapter.mResizeOptions = mResizeOptions
         }
 
-        initFolderId()
+        filesManager.initFolderId(this)
 
         pick_file.setOnClickListener {
             imageGalleryHelper.selectImage(this)
@@ -76,6 +76,11 @@ class GalleryActivity : AppCompatActivity() {
                 filesManager,
                 this
             )
+        }
+
+        user_dialog.setOnClickListener {
+            UserDialog()
+                .show(supportFragmentManager, "")
         }
     }
 
@@ -94,36 +99,16 @@ class GalleryActivity : AppCompatActivity() {
         })
     }
 
-    private fun initFolderId() {
-        val folderId = KeyValueStorage.getFolderId(this)
-        if (folderId == null) {
-            driveService
-                .files("name = '$folderName'")
-                .addOnSuccessListener {
-                    if (it.isEmpty()) {
-                        driveService
-                            .createFolder(folderName)
-                            .addOnCompleteListener {
-                                val folderId1 = it.result?.id
-                                folderId1?.let { it1 ->
-                                    KeyValueStorage.putFolderId(
-                                        this,
-                                        it1
-                                    )
-                                }
-                            }
-                    } else {
-                        KeyValueStorage.putFolderId(
-                            this,
-                            folderId = it.first().id
-                        )
-                    }
-                }
-        }
-    }
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == googleSignInHelper.RC_SIGN_IN) {
+            // The Task returned from this call is always completed, no need to attach
+            // a listener.
+            val task =
+                GoogleSignIn.getSignedInAccountFromIntent(data)
+            googleSignInHelper.handleSignInResult(task)
+        }
+
         if (resultCode != Activity.RESULT_CANCELED) {
             when (requestCode) {
                 1 -> if (resultCode == Activity.RESULT_OK && data != null) {
