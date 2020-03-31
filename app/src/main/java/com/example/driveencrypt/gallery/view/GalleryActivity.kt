@@ -67,7 +67,7 @@ class GalleryActivity : AppCompatActivity() {
             viewAdapter.mResizeOptions = mResizeOptions
         }
 
-        filesManager.initFolderId(this)
+//        filesManager.initFolderId(this)
 
         pick_file.setOnClickListener {
             imageGalleryHelper.selectImage(this)

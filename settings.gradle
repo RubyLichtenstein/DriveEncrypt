@@ -1,2 +1,2 @@
 rootProject.name='DriveEncrypt'
-include ':app'
+include ':app', ':pflockscreen'

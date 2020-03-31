@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.beautycoder.pflockscreen.PFFLockScreenConfiguration
 import com.beautycoder.pflockscreen.fragments.PFLockScreenFragment
-import com.beautycoder.pflockscreen.fragments.PFLockScreenFragment.OnPFLockScreenCodeCreateListener
 import com.example.driveencrypt.R
 
 
@@ -20,7 +19,7 @@ class PasswordActivity : AppCompatActivity() {
             .setMode(PFFLockScreenConfiguration.MODE_CREATE)
 
         fragment.setConfiguration(builder.build())
-        fragment.setCodeCreateListener(object : OnPFLockScreenCodeCreateListener {
+        fragment.setCodeCreateListener(object : PFLockScreenFragment.OnPFLockScreenCodeCreateListener {
             override fun onNewCodeValidationFailed() {
 
             }

@@ -1,23 +1,24 @@
 package com.example.driveencrypt.applicationlockscreenexample
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 import com.beautycoder.pflockscreen.PFFLockScreenConfiguration
+import com.beautycoder.pflockscreen.PinPreferences
 import com.beautycoder.pflockscreen.fragments.PFLockScreenFragment
 import com.beautycoder.pflockscreen.fragments.PFLockScreenFragment.OnPFLockScreenCodeCreateListener
 import com.beautycoder.pflockscreen.fragments.PFLockScreenFragment.OnPFLockScreenLoginListener
-import com.beautycoder.pflockscreen.security.PFSecurityManager
-import com.beautycoder.pflockscreen.viewmodels.PFPinCodeViewModel
 import com.example.driveencrypt.R
+import com.example.driveencrypt.gallery.view.GalleryActivity
 
 class MainActivity : AppCompatActivity() {
+    private val pinPreferences = PinPreferences()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main_password)
         showLockScreenFragment()
-        PFSecurityManager.getInstance().pinCodeHelper = TestPFPinCodeHelperImpl()
     }
 
     private val mCodeCreateListener: OnPFLockScreenCodeCreateListener =
@@ -32,6 +33,7 @@ class MainActivity : AppCompatActivity() {
                     .show()
             }
         }
+
     private val mLoginListener: OnPFLockScreenLoginListener = object : OnPFLockScreenLoginListener {
         override fun onCodeInputSuccessful() {
             Toast.makeText(this@MainActivity, "Code successfull", Toast.LENGTH_SHORT).show()
@@ -53,23 +55,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showLockScreenFragment() {
-        PFPinCodeViewModel().isPinCodeEncryptionKeyExist.observe(
-            this,
-            Observer { result ->
-                if (result == null) {
-                    return@Observer
-                }
-                if (result.error != null) {
-                    Toast.makeText(
-                        this@MainActivity,
-                        "Can not get pin code info",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    return@Observer
-                }
-                showLockScreenFragment(result.result)
-            }
-        )
+        val pinExist = pinPreferences.isPinExist(this)
+        showLockScreenFragment(pinExist)
     }
 
     private fun showLockScreenFragment(isPinExist: Boolean) {
@@ -81,13 +68,13 @@ class MainActivity : AppCompatActivity() {
             .setNewCodeValidationTitle("Please input code again")
             .setUseFingerprint(true)
         val fragment = PFLockScreenFragment()
-        fragment.setOnLeftButtonClickListener {
-            Toast.makeText(
-                this@MainActivity,
-                "Left button pressed",
-                Toast.LENGTH_LONG
-            ).show()
-        }
+//        fragment.setOnLeftButtonClickListener {
+//            Toast.makeText(
+//                this@MainActivity,
+//                "Left button pressed",
+//                Toast.LENGTH_LONG
+//            ).show()
+//        }
         builder.setMode(if (isPinExist) PFFLockScreenConfiguration.MODE_AUTH else PFFLockScreenConfiguration.MODE_CREATE)
         if (isPinExist) {
             fragment.setEncodedPinCode(PreferencesSettings.getCode(this))
@@ -100,8 +87,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showMainFragment() {
-        val fragment = MainFragment()
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.container_view, fragment).commit()
+        val intent = Intent(this, GalleryActivity::class.java)
+        startActivity(intent)
+        finish()
     }
 }
