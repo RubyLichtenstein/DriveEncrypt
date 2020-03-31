@@ -5,11 +5,14 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.driveencrypt.files.FilesManager
 import com.example.driveencrypt.files.LocalFilesManager
+import com.google.api.services.drive.model.File
 
 class GalleryViewModel : ViewModel() {
     val localFilesLiveData = MutableLiveData<List<String>>()
     val addFileLiveData = MutableLiveData<String>()
     val refreshLiveData = MutableLiveData<Boolean>()
+
+    val remoteFiles = mutableListOf<File>()
 
     fun showAllLocalFiles(context: Context) {
         val localFilesPaths = LocalFilesManager.getLocalFilesPaths(context)
@@ -29,6 +32,7 @@ class GalleryViewModel : ViewModel() {
                 it.forEach { task ->
                     task
                         .addOnSuccessListener {
+//                            remoteFiles.add(it)
                             addFileLiveData.value = it.path
                         }
                         .addOnCompleteListener {

@@ -1,5 +1,6 @@
 package com.example.driveencrypt.gallery.view
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
@@ -8,18 +9,17 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.driveencrypt.KeyValueStorage
 import com.example.driveencrypt.R
-import com.example.driveencrypt.drive.DriveService
 import com.example.driveencrypt.files.FilesManager
 import com.example.driveencrypt.files.LocalFilesManager
 import com.example.driveencrypt.gallery.GalleryViewModel
-import com.example.driveencrypt.gallery.ImageActivity
+import com.example.driveencrypt.gallery.pager.ImageActivity
 import com.example.driveencrypt.gallery.ImageGalleryHelper
 import com.example.driveencrypt.signin.GoogleSignInHelper
 import com.facebook.imagepipeline.common.ResizeOptions
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import kotlinx.android.synthetic.main.activity_gallery.*
+import pub.devrel.easypermissions.EasyPermissions
 import java.io.File
 
 class GalleryActivity : AppCompatActivity() {
@@ -37,6 +37,8 @@ class GalleryActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_gallery)
+
+        checkStoragePermission()
 
         googleSignInHelper = GoogleSignInHelper(this)
         viewAdapter = GalleryAdapter()
@@ -81,6 +83,24 @@ class GalleryActivity : AppCompatActivity() {
         user_dialog.setOnClickListener {
             UserDialog()
                 .show(supportFragmentManager, "")
+        }
+    }
+
+    private fun checkStoragePermission() {
+        val galleryPermissions = arrayOf(
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
+
+        if (EasyPermissions.hasPermissions(this, *galleryPermissions)) {
+            //            pickImageFromGallery()
+        } else {
+            EasyPermissions.requestPermissions(
+                this,
+                "Access for storage",
+                101,
+                *galleryPermissions
+            )
         }
     }
 

@@ -15,6 +15,7 @@ import com.google.api.services.drive.DriveScopes
 import com.google.api.services.drive.model.File
 import com.google.api.services.drive.model.FileList
 import java.io.FileOutputStream
+import java.io.IOException
 import java.io.OutputStream
 import java.util.concurrent.Callable
 import java.util.concurrent.Executor
@@ -38,7 +39,15 @@ class DriveService(private val drive: Drive) {
     }
 
     private fun <V> execute(call: () -> V): Task<V> {
-        return Tasks.call(mExecutor, Callable(call))
+        return Tasks.call(mExecutor, Callable {
+            // todo try catch
+//            try {
+                call()
+//            } catch (e: IOException) {
+//                Log.e("TAG", "execute", e)
+//                null
+//            }
+        })
     }
 
     fun uploadFile(
@@ -108,7 +117,6 @@ class DriveService(private val drive: Drive) {
             .executeMediaAndDownloadTo(outputStream)
     }
 
-
     companion object {
         private fun getGoogleDriveService(
             context: Context?,
@@ -146,6 +154,11 @@ class DriveService(private val drive: Drive) {
         private const val TAG = "DriveServiceHelper"
     }
 
+    fun deleteFile(
+        fileId: String
+    ) = execute {
+        drive.files().delete(fileId).execute()
+    }
 }
 
 fun <V> Task<V>.log(tag: String, msg: String) =

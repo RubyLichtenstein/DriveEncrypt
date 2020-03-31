@@ -28,55 +28,5 @@ class MainActivity : AppCompatActivity() {
         SignInButton.setOnClickListener {
             googleSignInHelper.signIn()
         }
-
-        val galleryPermissions = arrayOf(
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-        )
-
-        if (EasyPermissions.hasPermissions(this, *galleryPermissions)) {
-//            pickImageFromGallery()
-        } else {
-            EasyPermissions.requestPermissions(
-                this,
-                "Access for storage",
-                101,
-                *galleryPermissions
-            )
-        }
-
-        if (googleSignInHelper.isUserSignedIn(this)) {
-            startActivity(Intent(this, GalleryActivity::class.java))
-        }
-
-        galleryButton.setOnClickListener {
-            startActivity(Intent(this, GalleryActivity::class.java))
-        }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        val account = GoogleSignIn.getLastSignedInAccount(this)
-        handleAccount(account)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        // Result returned from launching the Intent from GoogleSignInClient.getSignInIntent(...);
-        if (requestCode == googleSignInHelper.RC_SIGN_IN) {
-            // The Task returned from this call is always completed, no need to attach
-            // a listener.
-            val task =
-                GoogleSignIn.getSignedInAccountFromIntent(data)
-//            handleSignInResult(task)
-        }
-    }
-
-    private fun handleAccount(account: GoogleSignInAccount?) {
-        if (account == null) {
-            Log.d("TAG", "account is null")
-            return
-        }
     }
 }

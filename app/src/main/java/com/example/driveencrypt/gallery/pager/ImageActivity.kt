@@ -1,4 +1,4 @@
-package com.example.driveencrypt.gallery
+package com.example.driveencrypt.gallery.pager
 
 import android.os.Bundle
 import android.view.View
@@ -8,12 +8,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import com.example.driveencrypt.R
 import com.example.driveencrypt.files.FilesManager
-import com.example.driveencrypt.gallery.pager.ImagePagerAdapter
+import com.example.driveencrypt.gallery.GalleryViewModel
 import com.example.driveencrypt.share.shareImage
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.android.synthetic.main.activity_image.*
 
 class ImageActivity : AppCompatActivity() {
+
+    private lateinit var model: GalleryViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,6 +23,7 @@ class ImageActivity : AppCompatActivity() {
         val filesManager = FilesManager.create(this)
 
         val model: GalleryViewModel by viewModels()
+        this.model = model
 
         val path = intent.getStringExtra(ARG_IMAGE_PATH)
 
@@ -49,19 +52,32 @@ class ImageActivity : AppCompatActivity() {
                 }
 
                 R.id.upload -> {
-                    progress.visibility = View.VISIBLE
-                    filesManager
-                        .uploadFile(path)
-                        ?.addOnSuccessListener {
-                            progress.visibility = View.GONE
+                    upload(filesManager, path)
+                }
 
-                            Toast
-                                .makeText(this, "file uploaded", Toast.LENGTH_SHORT)
-                                .show()
-                        }
+                R.id.delete -> {
+                    val fileIdToDelete = model.localFilesLiveData.value
+                    filesManager.deleteLocal(path)
                 }
             }
         }
+    }
+
+    private fun upload(filesManager: FilesManager, path: String) {
+        Toast
+            .makeText(this, "start upload...", Toast.LENGTH_SHORT)
+            .show()
+
+        progress.visibility = View.VISIBLE
+        filesManager
+            .uploadFile(path)
+            ?.addOnSuccessListener {
+                progress.visibility = View.GONE
+
+                Toast
+                    .makeText(this, "file uploaded", Toast.LENGTH_SHORT)
+                    .show()
+            }
     }
 
     companion object {

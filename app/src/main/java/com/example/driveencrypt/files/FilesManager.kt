@@ -153,4 +153,6 @@ class FilesManager(
                 }
         }
     }
+
+    fun deleteLocal(path: String) = File(path).delete()
 }
