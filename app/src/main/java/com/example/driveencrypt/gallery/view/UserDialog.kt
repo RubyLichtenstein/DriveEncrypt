@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.DialogFragment
 import com.example.driveencrypt.R
+import com.example.driveencrypt.lockscreen.LockScreenActivity
 import com.example.driveencrypt.signin.GoogleSignInHelper
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -16,7 +17,7 @@ import kotlinx.android.synthetic.main.dialog_signin.view.lockscreen
 
 class UserDialog : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return activity?.let {
+        return activity?.let { it ->
             val builder = AlertDialog.Builder(it)
             // Get the layout inflater
             val inflater = requireActivity().layoutInflater;
@@ -41,8 +42,8 @@ class UserDialog : DialogFragment() {
                 }
             }
 
-            lockscreen.setOnClickListener {
-
+            view.lockscreen.setOnClickListener { _ ->
+                LockScreenActivity.editPassword(it)
             }
 
             builder.setView(view)
@@ -51,7 +52,7 @@ class UserDialog : DialogFragment() {
     }
 
     private fun displayAccount(view: View, account: GoogleSignInAccount) {
-        view.user_name.text = account?.displayName
-        view.email.text = account?.email
+        view.user_name.text = account.displayName
+        view.email.text = account.email
     }
 }

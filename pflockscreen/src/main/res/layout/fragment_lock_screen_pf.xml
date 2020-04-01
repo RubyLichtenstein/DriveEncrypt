@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/fragment_pf"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -16,7 +17,7 @@
         style="?pf_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="24dp"
         android:text="@string/lock_screen_title_pf"
         android:textSize="24sp"
         android:theme="@style/PFLockScreenTitleTextStyle"
@@ -26,7 +27,7 @@
         android:id="@+id/code_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
+        android:layout_margin="24dp"
         app:layout_constraintBottom_toTopOf="@+id/password_buttons"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -35,6 +36,7 @@
         android:id="@+id/password_buttons"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
@@ -102,20 +104,16 @@
 
             <Button
                 android:id="@+id/button_7"
-
                 style="@style/PasswordText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
                 android:text="7" />
 
             <Button
                 android:id="@+id/button_8"
-
                 style="@style/PasswordText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
                 android:text="8" />
 
             <Button
@@ -123,7 +121,6 @@
                 style="@style/PasswordText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
                 android:text="9" />
         </TableRow>
 
@@ -131,34 +128,59 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <ImageView
-                android:id="@+id/button_delete"
-                style="@style/PasswordImage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:layout_gravity="center"
-                android:src="@drawable/ic_backspace_black_24dp">
+                android:layout_weight="1">
 
-            </ImageView>
+                <ImageButton
+                    android:id="@+id/button_delete"
+                    style="@style/PasswordImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_backspace_black_24dp">
+
+                </ImageButton>
+            </FrameLayout>
 
             <Button
                 android:id="@+id/button_0"
                 style="@style/PasswordText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
+                android:layout_gravity="center"
+                android:layout_weight="1"
                 android:text="0" />
 
-            <Button
-                android:id="@+id/button_next"
-                style="@style/PasswordImage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:gravity="center"
-                android:text="next"
-                android:textColor="@android:color/white"
-                android:visibility="visible" />
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackgroundBorderless">
+
+                <Button
+                    android:id="@+id/button_next"
+                    style="@style/PasswordImage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:gravity="center"
+                    android:text="next"
+                    android:textColor="@android:color/white"
+                    tools:visibility="gone" />
+
+                <ImageButton
+                    android:id="@+id/button_finger_print"
+                    style="@style/PasswordImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_fingerprint_black_24dp" />
+            </FrameLayout>
+
         </TableRow>
     </TableLayout>
 

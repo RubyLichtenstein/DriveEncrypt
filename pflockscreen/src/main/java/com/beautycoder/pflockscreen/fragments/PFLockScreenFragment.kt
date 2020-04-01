@@ -28,9 +28,10 @@ import com.beautycoder.pflockscreen.views.PFCodeView.OnPFCodeListener
 class PFLockScreenFragment : Fragment() {
     val pinPreferences = PinPreferences()
 
-//    private lateinit var mFingerprintButton: View
+    private lateinit var mFingerprintButton: View
     private lateinit var mDeleteButton: View
-//    private lateinit var mLeftButton: TextView
+
+    //    private lateinit var mLeftButton: TextView
     private lateinit var mNextButton: Button
     private lateinit var mCodeView: PFCodeView
     private lateinit var titleView: TextView
@@ -45,7 +46,6 @@ class PFLockScreenFragment : Fragment() {
     private var mConfiguration: PFFLockScreenConfiguration? = null
     private var mRootView: View? = null
 
-    //    private val mPFPinCodeViewModel = PFPinCodeViewModel()
     private var mOnLeftButtonClickListener: View.OnClickListener? = null
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
@@ -68,19 +68,21 @@ class PFLockScreenFragment : Fragment() {
                 INSTANCE_STATE_CONFIG
             ) as PFFLockScreenConfiguration
         }
-//        mFingerprintButton = view.findViewById(R.id.button_finger_print)
+        mFingerprintButton = view.findViewById(R.id.button_finger_print)
         mDeleteButton = view.findViewById(R.id.button_delete)
 //        mLeftButton = view.findViewById(R.id.button_left)
         mNextButton = view.findViewById(R.id.button_next)
         mDeleteButton.setOnClickListener(mOnDeleteButtonClickListener)
         mDeleteButton.setOnLongClickListener(mOnDeleteButtonOnLongClickListener)
-//        mFingerprintButton.setOnClickListener(mOnFingerprintClickListener)
+        mFingerprintButton.setOnClickListener(mOnFingerprintClickListener)
         mCodeView = view.findViewById(R.id.code_view)
         initKeyViews(view)
         mCodeView.setListener(mCodeListener)
+
         if (!mUseFingerPrint) {
-//            mFingerprintButton.setVisibility(View.GONE)
+            mFingerprintButton.setVisibility(View.GONE)
         }
+
         mFingerprintHardwareDetected = isFingerprintApiAvailable(context)
         mRootView = view
         applyConfiguration(mConfiguration)
@@ -91,7 +93,7 @@ class PFLockScreenFragment : Fragment() {
         if (!mIsCreateMode && mUseFingerPrint && mConfiguration!!.isAutoShowFingerprint &&
             isFingerprintApiAvailable(activity) && isFingerprintsExists(activity)
         ) {
-//            mOnFingerprintClickListener.onClick(mFingerprintButton)
+            mOnFingerprintClickListener.onClick(mFingerprintButton)
         }
         super.onStart()
     }
@@ -114,25 +116,25 @@ class PFLockScreenFragment : Fragment() {
 //            mLeftButton!!.setOnClickListener(mOnLeftButtonClickListener)
         }
         if (!TextUtils.isEmpty(configuration.nextButton)) {
-            mNextButton!!.text = configuration.nextButton
+            mNextButton.text = configuration.nextButton
         }
         mUseFingerPrint = configuration.isUseFingerprint
         if (!mUseFingerPrint) {
-//            mFingerprintButton!!.visibility = View.GONE
-            mDeleteButton!!.visibility = View.VISIBLE
+            mFingerprintButton.visibility = View.GONE
+            mDeleteButton.visibility = View.VISIBLE
         }
         mIsCreateMode = mConfiguration!!.mode == PFFLockScreenConfiguration.MODE_CREATE
         if (mIsCreateMode) {
 //            mLeftButton!!.visibility = View.GONE
-//            mFingerprintButton!!.visibility = View.GONE
+            mFingerprintButton.visibility = View.GONE
         }
         if (mIsCreateMode) {
-            mNextButton!!.setOnClickListener(mOnNextButtonClickListener)
+            mNextButton.setOnClickListener(mOnNextButtonClickListener)
         } else {
-            mNextButton!!.setOnClickListener(null)
+            mNextButton.setOnClickListener(null)
         }
-        mNextButton!!.visibility = View.INVISIBLE
-        mCodeView!!.setCodeLength(mConfiguration!!.codeLength)
+        mNextButton.visibility = View.GONE
+        mCodeView.setCodeLength(mConfiguration!!.codeLength)
     }
 
     private fun initKeyViews(parent: View) {
@@ -223,17 +225,17 @@ class PFLockScreenFragment : Fragment() {
         }
 
         if (codeLength > 0) {
-//            mFingerprintButton!!.visibility = View.GONE
-            mDeleteButton!!.visibility = View.VISIBLE
+            mFingerprintButton.visibility = View.GONE
+            mDeleteButton.visibility = View.VISIBLE
             mDeleteButton!!.isEnabled = true
             return
         }
 
         if (mUseFingerPrint && mFingerprintHardwareDetected) {
-//            mFingerprintButton!!.visibility = View.VISIBLE
+            mFingerprintButton!!.visibility = View.VISIBLE
 //            mDeleteButton!!.visibility = View.GONE
         } else {
-//            mFingerprintButton!!.visibility = View.GONE
+            mFingerprintButton!!.visibility = View.GONE
             mDeleteButton!!.visibility = View.VISIBLE
         }
         mDeleteButton!!.isEnabled = false

@@ -16,11 +16,13 @@ import com.example.driveencrypt.gallery.view.GalleryActivity
 class LockScreenActivity : AppCompatActivity() {
     private val pinPreferences = PinPreferences()
 
+    var editPassword: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main_password)
-        val editPassword = intent.getBooleanExtra(EDIT_PASSWORD, false)
+        editPassword = intent.getBooleanExtra(EDIT_PASSWORD, false)
+
         if (editPassword) {
             showLockScreenFragment()
         } else {
@@ -32,7 +34,11 @@ class LockScreenActivity : AppCompatActivity() {
         object : OnPFLockScreenCodeCreateListener {
             override fun onCodeCreated(encodedCode: String) {
                 Toast.makeText(this@LockScreenActivity, "Code created", Toast.LENGTH_SHORT).show()
-//                PreferencesSettings.saveToPref(this@MainActivity, encodedCode)
+                if (editPassword) {
+                    finish()
+                } else {
+                    showMainActivity()
+                }
             }
 
             override fun onNewCodeValidationFailed() {
@@ -43,14 +49,15 @@ class LockScreenActivity : AppCompatActivity() {
 
     private val mLoginListener: OnPFLockScreenLoginListener = object : OnPFLockScreenLoginListener {
         override fun onCodeInputSuccessful() {
-            Toast.makeText(this@LockScreenActivity, "Code successfull", Toast.LENGTH_SHORT).show()
-            showMainFragment()
+            if (editPassword) {
+                showLockScreenFragment(isPinExist = false)
+            } else {
+                showMainActivity()
+            }
         }
 
         override fun onFingerprintSuccessful() {
-            Toast.makeText(this@LockScreenActivity, "Fingerprint successfull", Toast.LENGTH_SHORT)
-                .show()
-            showMainFragment()
+            showMainActivity()
         }
 
         override fun onPinLoginFailed() {
@@ -84,17 +91,18 @@ class LockScreenActivity : AppCompatActivity() {
 //            ).show()
 //        }
         builder.setMode(if (isPinExist) PFFLockScreenConfiguration.MODE_AUTH else PFFLockScreenConfiguration.MODE_CREATE)
+
         if (isPinExist) {
-//            fragment.setEncodedPinCode(PreferencesSettings.getCode(this))
             fragment.setLoginListener(mLoginListener)
         }
+
         fragment.setConfiguration(builder.build())
         fragment.setCodeCreateListener(mCodeCreateListener)
         supportFragmentManager.beginTransaction()
             .replace(R.id.container_view, fragment).commit()
     }
 
-    private fun showMainFragment() {
+    private fun showMainActivity() {
         val intent = Intent(this, GalleryActivity::class.java)
         startActivity(intent)
         finish()
