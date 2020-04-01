@@ -24,16 +24,15 @@
                 android:resource="@xml/filepaths" />
         </provider>
 
-        <activity android:name=".password.PasswordActivity">
-
-        </activity>
         <activity
             android:name=".gallery.pager.ImageActivity"
             android:theme="@style/Theme.ImageActivity" />
+
         <activity android:name=".gallery.view.GalleryActivity">
 
         </activity>
-        <activity android:name=".applicationlockscreenexample.MainActivity">
+
+        <activity android:name=".lockscreen.LockScreenActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

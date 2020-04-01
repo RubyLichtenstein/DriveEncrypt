@@ -9,8 +9,10 @@ import com.example.driveencrypt.R
 import com.example.driveencrypt.signin.GoogleSignInHelper
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import kotlinx.android.synthetic.main.dialog_signin.*
 import kotlinx.android.synthetic.main.dialog_signin.view.*
 import kotlinx.android.synthetic.main.dialog_signin.view.googleSignInButton
+import kotlinx.android.synthetic.main.dialog_signin.view.lockscreen
 
 class UserDialog : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -37,6 +39,10 @@ class UserDialog : DialogFragment() {
                 view.googleSignInButton.setOnClickListener {
                     googleSignInHelper.signIn()
                 }
+            }
+
+            lockscreen.setOnClickListener {
+
             }
 
             builder.setView(view)

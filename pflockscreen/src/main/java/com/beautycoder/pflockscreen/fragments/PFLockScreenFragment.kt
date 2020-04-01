@@ -215,21 +215,23 @@ class PFLockScreenFragment : Fragment() {
     private fun configureRightButton(codeLength: Int) {
         if (mIsCreateMode) {
             if (codeLength > 0) {
-                mDeleteButton!!.visibility = View.VISIBLE
+                mDeleteButton.visibility = View.VISIBLE
             } else {
-                mDeleteButton!!.visibility = View.GONE
+//                mDeleteButton.visibility = View.GONE
             }
             return
         }
+
         if (codeLength > 0) {
 //            mFingerprintButton!!.visibility = View.GONE
             mDeleteButton!!.visibility = View.VISIBLE
             mDeleteButton!!.isEnabled = true
             return
         }
+
         if (mUseFingerPrint && mFingerprintHardwareDetected) {
 //            mFingerprintButton!!.visibility = View.VISIBLE
-            mDeleteButton!!.visibility = View.GONE
+//            mDeleteButton!!.visibility = View.GONE
         } else {
 //            mFingerprintButton!!.visibility = View.GONE
             mDeleteButton!!.visibility = View.VISIBLE

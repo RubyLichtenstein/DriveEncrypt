@@ -48,13 +48,22 @@
     </style>
 
     <style name="PasswordButton">
-        <item name="android:textColor">@android:color/white</item>
-        <item name="android:textSize">36sp</item>
-
         <!--        <item name="android:textStyle">bold</item>-->
-        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:layout_weight">1</item>
+
+    </style>
+
+    <style name="PasswordImage" parent="PasswordButton">
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
         <item name="android:layout_margin">4dp</item>
         <item name="android:padding">4dp</item>
+    </style>
+
+    <style name="PasswordText" parent="PasswordButton">
+        <item name="android:textSize">36sp</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:textColor">@android:color/white</item>
+
     </style>
 
 
