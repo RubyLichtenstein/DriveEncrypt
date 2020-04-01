@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
@@ -74,10 +75,10 @@ class GalleryActivity : AppCompatActivity() {
         }
 
         swipe_refresh.setOnRefreshListener {
-            model.refreshFiles(
-                filesManager,
-                this
-            )
+//            model.refreshFiles(
+//                filesManager,
+//                this
+//            )
         }
 
         user_dialog.setOnClickListener {
@@ -107,13 +108,21 @@ class GalleryActivity : AppCompatActivity() {
     private fun setupViewModel(model: GalleryViewModel) {
         model.showAllLocalFiles(this)
         model.localFilesLiveData.observe(this, Observer {
+            if (it.isEmpty()) {
+                empty_state.visibility = View.VISIBLE
+            } else {
+                empty_state.visibility = View.GONE
+            }
+
             it.forEach {
                 viewAdapter.add(it)
             }
         })
+
         model.addFileLiveData.observe(this, Observer {
             viewAdapter.add(it)
         })
+
         model.refreshLiveData.observe(this, Observer {
             swipe_refresh.isRefreshing = it
         })
@@ -147,6 +156,7 @@ class GalleryActivity : AppCompatActivity() {
 
     private fun handleImagePath(picturePath: String) {
         viewAdapter.add(picturePath)
+        empty_state.visibility = View.GONE
         val file = File(picturePath)
         LocalFilesManager.saveToLocalFiles(this, file)
         filesManager.uploadFile(picturePath)?.addOnSuccessListener { }

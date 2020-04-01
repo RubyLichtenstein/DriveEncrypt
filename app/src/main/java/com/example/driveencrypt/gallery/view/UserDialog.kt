@@ -46,6 +46,13 @@ class UserDialog : DialogFragment() {
                 LockScreenActivity.editPassword(it)
             }
 
+            view.download_files.setOnClickListener { _ ->
+//            model.refreshFiles(
+//                filesManager,
+//                this
+//            )
+            }
+
             builder.setView(view)
             builder.create()
         } ?: throw IllegalStateException("Activity cannot be null")

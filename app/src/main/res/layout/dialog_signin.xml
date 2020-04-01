@@ -31,6 +31,12 @@
         android:layout_height="wrap_content"
         android:text="lock screen" />
 
+    <Button
+        android:id="@+id/download_files"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="download_files" />
+
     <com.google.android.gms.common.SignInButton
         android:id="@+id/googleSignInButton"
         android:layout_width="wrap_content"
