@@ -5,10 +5,10 @@
         <item name="android:background">@drawable/background_pf</item>
     </style>
 
-    <style name="PFLockScreenButtonStyle" parent="Theme.AppCompat.Light">
+    <style name="PFLockScreenButtonStyle" parent="Theme.MaterialComponents.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="android:textColor">@android:color/white</item>
-        <item name="android:background">@drawable/touch_selector_pf</item>
+        <!--        <item name="android:background">@drawable/touch_selector_pf</item>-->
     </style>
 
     <style name="PFLockScreenFingerPrintButtonStyle">
@@ -55,7 +55,6 @@
 
     <style name="PasswordImage" parent="PasswordButton">
         <item name="android:background">?attr/selectableItemBackground</item>
-
     </style>
 
     <style name="PasswordText" parent="PasswordButton">

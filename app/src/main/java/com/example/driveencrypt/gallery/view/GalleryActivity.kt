@@ -2,6 +2,7 @@ package com.example.driveencrypt.gallery.view
 
 import android.Manifest
 import android.app.Activity
+import android.app.ActivityOptions
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -48,10 +49,13 @@ class GalleryActivity : AppCompatActivity() {
         val model: GalleryViewModel by viewModels()
         setupViewModel(model)
 
-        viewAdapter.onClick = {
-            val intent = Intent(this, ImageActivity::class.java)
-            intent.putExtra(ImageActivity.ARG_IMAGE_PATH, it.path)
-            startActivity(intent)
+        viewAdapter.onClick = { view, item ->
+
+            ImageActivity.startWithTransition(
+                this,
+                item.path,
+                view
+            )
         }
 
         val gridLayoutManager = GridLayoutManager(this@GalleryActivity, SPAN_COUNT)
@@ -74,12 +78,12 @@ class GalleryActivity : AppCompatActivity() {
             imageGalleryHelper.selectImage(this)
         }
 
-        swipe_refresh.setOnRefreshListener {
+//        swipe_refresh.setOnRefreshListener {
 //            model.refreshFiles(
 //                filesManager,
 //                this
 //            )
-        }
+//        }
 
         user_dialog.setOnClickListener {
             UserDialog()
@@ -123,9 +127,9 @@ class GalleryActivity : AppCompatActivity() {
             viewAdapter.add(it)
         })
 
-        model.refreshLiveData.observe(this, Observer {
-            swipe_refresh.isRefreshing = it
-        })
+//        model.refreshLiveData.observe(this, Observer {
+//            swipe_refresh.isRefreshing = it
+//        })
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -160,5 +164,9 @@ class GalleryActivity : AppCompatActivity() {
         val file = File(picturePath)
         LocalFilesManager.saveToLocalFiles(this, file)
         filesManager.uploadFile(picturePath)?.addOnSuccessListener { }
+    }
+
+    companion object {
+
     }
 }

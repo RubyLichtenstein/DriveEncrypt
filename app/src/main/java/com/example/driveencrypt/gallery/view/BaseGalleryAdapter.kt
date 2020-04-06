@@ -6,7 +6,7 @@ import com.example.driveencrypt.gallery.GalleryItem
 
 abstract class BaseGalleryAdapter : RecyclerView.Adapter<BaseGalleryAdapter.MyViewHolder>() {
 
-    var onClick: ((GalleryItem) -> Unit)? = null
+    var onClick: ((View, GalleryItem) -> Unit)? = null
 
     protected val data = mutableListOf<GalleryItem>()
 

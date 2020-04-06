@@ -1,5 +1,8 @@
 package com.example.driveencrypt.gallery.pager
 
+import android.app.Activity
+import android.app.ActivityOptions
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -9,6 +12,7 @@ import androidx.lifecycle.Observer
 import com.example.driveencrypt.R
 import com.example.driveencrypt.files.FilesManager
 import com.example.driveencrypt.gallery.GalleryViewModel
+import com.example.driveencrypt.gallery.view.GalleryActivity
 import com.example.driveencrypt.share.shareImage
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.android.synthetic.main.activity_image.*
@@ -83,5 +87,20 @@ class ImageActivity : AppCompatActivity() {
     companion object {
         const val ARG_IMAGE_PATH = "image_path"
         const val ARG_SYNC_STATUS = "sync_status"
+
+        fun startWithTransition(
+            activity: Activity,
+            path: String,
+            view: View
+        ) {
+            val options = ActivityOptions
+                .makeSceneTransitionAnimation(activity, view, "image")
+            val intent = Intent(activity, ImageActivity::class.java)
+            intent.putExtra(ARG_IMAGE_PATH, path)
+            activity.startActivity(
+                intent // ,
+//                options.toBundle()
+            )
+        }
     }
 }

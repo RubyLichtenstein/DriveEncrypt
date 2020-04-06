@@ -41,7 +41,7 @@ class GalleryAdapter : BaseGalleryAdapter() {
         holder.view.gallery_image.setImageRequest(imageRequest)
 
         holder.view.setOnClickListener {
-            onClick?.invoke(galleryItem)
+            onClick?.invoke(it, galleryItem)
         }
     }
 }
