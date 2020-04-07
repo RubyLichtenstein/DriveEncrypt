@@ -86,4 +86,6 @@ dependencies {
     implementation 'me.relex:photodraweeview:2.0.0'
     implementation "net.gotev:uploadservice:4.2.1"
 
+    implementation 'com.google.android.exoplayer:exoplayer:2.+'
+
 }

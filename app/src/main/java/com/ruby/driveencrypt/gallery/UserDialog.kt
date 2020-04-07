@@ -1,4 +1,4 @@
-package com.ruby.driveencrypt.gallery.view
+package com.ruby.driveencrypt.gallery
 
 import android.app.AlertDialog
 import android.app.Dialog
@@ -35,6 +35,8 @@ class UserDialog : DialogFragment() {
                 }
             } else {
                 view.logout.visibility = View.GONE
+                view.user_name.visibility = View.GONE
+                view.email.visibility = View.GONE
                 view.googleSignInButton.visibility = View.VISIBLE
                 view.googleSignInButton.setOnClickListener {
                     googleSignInHelper.signIn()
@@ -58,6 +60,8 @@ class UserDialog : DialogFragment() {
     }
 
     private fun displayAccount(view: View, account: GoogleSignInAccount) {
+        view.user_name.visibility = View.VISIBLE
+        view.email.visibility = View.VISIBLE
         view.user_name.text = account.displayName
         view.email.text = account.email
     }

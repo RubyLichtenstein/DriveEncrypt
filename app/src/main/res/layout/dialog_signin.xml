@@ -10,7 +10,7 @@
 
     <com.google.android.gms.common.SignInButton
         android:id="@+id/googleSignInButton"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -38,7 +38,7 @@
 
     <Button
         android:id="@+id/lockscreen"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="change password"
         android:textColor="@color/primaryTextColor" />

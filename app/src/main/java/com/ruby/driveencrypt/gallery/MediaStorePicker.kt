@@ -8,12 +8,21 @@ import android.net.Uri
 import android.provider.MediaStore
 
 
-class ImageGalleryHelper {
+class MediaStorePicker {
 
-    fun selectImage(activity: Activity) {
+    fun selectImages(activity: Activity) {
         val pickPhoto = Intent(
             Intent.ACTION_PICK,
             MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        )
+        pickPhoto.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        activity.startActivityForResult(pickPhoto, 1)
+    }
+
+    fun selectVideos(activity: Activity) {
+        val pickPhoto = Intent(
+            Intent.ACTION_PICK,
+            MediaStore.Video.Media.EXTERNAL_CONTENT_URI
         )
         pickPhoto.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         activity.startActivityForResult(pickPhoto, 1)

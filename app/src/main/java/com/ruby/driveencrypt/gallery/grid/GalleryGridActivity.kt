@@ -1,14 +1,14 @@
-package com.ruby.driveencrypt.gallery.view
+package com.ruby.driveencrypt.gallery.grid
 
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.media.MediaScannerConnection
-import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
-import android.util.Log
 import android.view.View
+import android.view.WindowManager
+import android.view.WindowManager.LayoutParams.*
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
@@ -20,20 +20,21 @@ import com.ruby.driveencrypt.R
 import com.ruby.driveencrypt.files.FilesManager
 import com.ruby.driveencrypt.files.LocalFilesManager
 import com.ruby.driveencrypt.gallery.GalleryViewModel
-import com.ruby.driveencrypt.gallery.ImageGalleryHelper
-import com.ruby.driveencrypt.gallery.pager.ImageActivity
+import com.ruby.driveencrypt.gallery.MediaStorePicker
+import com.ruby.driveencrypt.gallery.UserDialog
+import com.ruby.driveencrypt.gallery.pager.GalleryPagerActivity
 import com.ruby.driveencrypt.signin.GoogleSignInHelper
 import kotlinx.android.synthetic.main.activity_gallery.*
 import pub.devrel.easypermissions.EasyPermissions
 import java.io.File
 
 
-class GalleryActivity : AppCompatActivity() {
+class GalleryGridActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
 
-    private val imageGalleryHelper = ImageGalleryHelper()
-    private lateinit var viewAdapter: GalleryAdapter
+    private val imageGalleryHelper = MediaStorePicker()
+    private lateinit var viewGridAdapter: GalleryGridAdapter
     lateinit var filesManager: FilesManager
 
     private val SPAN_COUNT = 3
@@ -43,42 +44,47 @@ class GalleryActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_gallery)
+        window.addFlags(FLAG_TRANSLUCENT_STATUS or FLAG_TRANSLUCENT_NAVIGATION)
 
         checkStoragePermission()
 
         googleSignInHelper = GoogleSignInHelper(this)
-        viewAdapter = GalleryAdapter()
+        viewGridAdapter = GalleryGridAdapter()
         filesManager = FilesManager.create(this)
 
         val model: GalleryViewModel by viewModels()
         setupViewModel(model)
 
-        viewAdapter.onClick = { view, item ->
-            ImageActivity.startWithTransition(
+        viewGridAdapter.onClick = { view, item ->
+            GalleryPagerActivity.startWithTransition(
                 this,
                 item.path,
                 view
             )
         }
 
-        val gridLayoutManager = GridLayoutManager(this@GalleryActivity, SPAN_COUNT)
+        val gridLayoutManager = GridLayoutManager(this@GalleryGridActivity, SPAN_COUNT)
 
         recyclerView = my_recycler_view.apply {
             setHasFixedSize(true)
             layoutManager = gridLayoutManager
-            adapter = viewAdapter
+            adapter = viewGridAdapter
         }
 
         recyclerView.addOnLayoutChangeListener { view, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
             val imageSize = (right - left) / SPAN_COUNT
             mResizeOptions = ResizeOptions(imageSize, imageSize)
-            viewAdapter.mResizeOptions = mResizeOptions
+            viewGridAdapter.mResizeOptions = mResizeOptions
         }
 
 //        filesManager.initFolderId(this)
 
         pick_file.setOnClickListener {
-            imageGalleryHelper.selectImage(this)
+            imageGalleryHelper.selectImages(this)
+        }
+
+        pick_videos.setOnClickListener {
+            imageGalleryHelper.selectVideos(this)
         }
 
 //        swipe_refresh.setOnRefreshListener {
@@ -122,12 +128,12 @@ class GalleryActivity : AppCompatActivity() {
             }
 
             it.forEach {
-                viewAdapter.add(it)
+                viewGridAdapter.add(it)
             }
         })
 
         model.addFileLiveData.observe(this, Observer {
-            viewAdapter.add(it)
+            viewGridAdapter.add(it)
         })
 
 //        model.refreshLiveData.observe(this, Observer {
@@ -162,28 +168,24 @@ class GalleryActivity : AppCompatActivity() {
     }
 
     private fun handleImagePath(picturePath: String) {
-        viewAdapter.add(picturePath)
         empty_state.visibility = View.GONE
         val file = File(picturePath)
         LocalFilesManager.saveToLocalFiles(this, file)
-        viewAdapter.add(picturePath)
+//        deleteFile(file)
+        viewGridAdapter.add(filesDir.path + '/' + file.name)
+        filesManager.uploadFile(picturePath)?.addOnSuccessListener { }
+    }
+
+    private fun deleteFile(file: File) {
         val delete = file.delete()
         MediaScannerConnection.scanFile(
             this,
             arrayOf(Environment.getExternalStorageDirectory().toString()),
             null
         ) { path, uri ->
-//            Log.i("ExternalStorage", "Scanned $path:")
-//            Log.i("ExternalStorage", "-> uri=$uri")
+            //            Log.i("ExternalStorage", "Scanned $path:")
+            //            Log.i("ExternalStorage", "-> uri=$uri")
         }
-
-//        sendBroadcast(
-//            Intent(
-//                Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
-//                Uri.fromFile(File(picturePath))
-//            )
-//        )
-        filesManager.uploadFile(picturePath)?.addOnSuccessListener { }
     }
 
     companion object {

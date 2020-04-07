@@ -25,10 +25,10 @@
         </provider>
 
         <activity
-            android:name="com.ruby.driveencrypt.gallery.pager.ImageActivity"
+            android:name="com.ruby.driveencrypt.gallery.pager.GalleryPagerActivity"
             android:theme="@style/Theme.ImageActivity" />
 
-        <activity android:name="com.ruby.driveencrypt.gallery.view.GalleryActivity">
+        <activity android:name="com.ruby.driveencrypt.gallery.grid.GalleryGridActivity">
 
         </activity>
 

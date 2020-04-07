@@ -1,16 +1,16 @@
-package com.ruby.driveencrypt.gallery.view
+package com.ruby.driveencrypt.gallery
 
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
-import com.ruby.driveencrypt.gallery.GalleryItem
 
-abstract class BaseGalleryAdapter : RecyclerView.Adapter<BaseGalleryAdapter.MyViewHolder>() {
+abstract class BaseGalleryAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     var onClick: ((View, GalleryItem) -> Unit)? = null
 
     protected val data = mutableListOf<GalleryItem>()
 
-    inner class MyViewHolder(val view: View) : RecyclerView.ViewHolder(view)
+    inner class ImageViewHolder(val view: View) : RecyclerView.ViewHolder(view)
+    inner class VideoViewHolder(val view: View) : RecyclerView.ViewHolder(view)
 
     override fun getItemCount() = data.size
 

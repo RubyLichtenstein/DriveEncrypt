@@ -5,6 +5,9 @@ import android.app.ActivityOptions
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.view.WindowManager
+import android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
+import android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -14,17 +17,54 @@ import com.ruby.driveencrypt.files.FilesManager
 import com.ruby.driveencrypt.gallery.GalleryViewModel
 import com.ruby.driveencrypt.share.shareImage
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.ruby.driveencrypt.drive.DriveService
 import kotlinx.android.synthetic.main.activity_image.*
-import kotlinx.android.synthetic.main.image_pager_list_item.*
 
-class ImageActivity : AppCompatActivity() {
+class GalleryPagerActivity : AppCompatActivity() {
 
     private lateinit var model: GalleryViewModel
+    private var driveService: DriveService? = null
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+//        if (hasFocus) hideSystemUI()
+    }
+
+    var isSystemUiShowed = true;
+
+    private fun hideSystemUI() {
+        isSystemUiShowed = false
+        // Enables regular immersive mode.
+        // For "lean back" mode, remove SYSTEM_UI_FLAG_IMMERSIVE.
+        // Or for "sticky immersive," replace it with SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
+                // Set the content to appear under the system bars so that the
+                // content doesn't resize when the system bars hide and show.
+                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                // Hide the nav bar and status bar
+                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_FULLSCREEN)
+    }
+
+    // Shows the system bars by removing all the flags
+    // except for the ones that make the content appear under the system bars.
+    private fun showSystemUI() {
+        isSystemUiShowed = true
+
+        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_image)
+        window.addFlags(FLAG_TRANSLUCENT_STATUS or FLAG_TRANSLUCENT_NAVIGATION)
+
         val filesManager = FilesManager.create(this)
+        driveService = DriveService.getDriveService(this)
 
         val model: GalleryViewModel by viewModels()
         this.model = model
@@ -33,7 +73,17 @@ class ImageActivity : AppCompatActivity() {
 
         setupBottomNavigation(path, filesManager)
 
-        val imagesPagerAdapter = ImagePagerAdapter()
+        val imagesPagerAdapter = GalleryPagerAdapter()
+        imagesPagerAdapter.onTap = { view, galleryItem ->
+            if (isSystemUiShowed) {
+                hideSystemUI()
+                bottom_navigation.visibility = View.GONE
+            } else {
+                showSystemUI()
+                bottom_navigation.visibility = View.VISIBLE
+            }
+        }
+
         image_pager.adapter = imagesPagerAdapter
 
         model.showAllLocalFiles(this)
@@ -49,6 +99,11 @@ class ImageActivity : AppCompatActivity() {
         filesManager: FilesManager
     ) {
         val bottomNavigationView = bottom_navigation as BottomNavigationView
+
+        if (driveService == null) {
+            bottomNavigationView.menu.removeItem(R.id.upload);
+        }
+
         bottomNavigationView.setOnNavigationItemReselectedListener {
             when (it.itemId) {
                 R.id.navigation_home -> {
@@ -95,7 +150,7 @@ class ImageActivity : AppCompatActivity() {
         ) {
             val options = ActivityOptions
                 .makeSceneTransitionAnimation(activity, view, "image")
-            val intent = Intent(activity, ImageActivity::class.java)
+            val intent = Intent(activity, GalleryPagerActivity::class.java)
             intent.putExtra(ARG_IMAGE_PATH, path)
             activity.startActivity(
                 intent // ,
