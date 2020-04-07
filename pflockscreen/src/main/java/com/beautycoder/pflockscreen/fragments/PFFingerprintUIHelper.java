@@ -55,7 +55,7 @@ public class PFFingerprintUIHelper extends FingerprintManagerCompat.Authenticati
         // noinspection ResourceType
         mFingerprintManager.authenticate(
                 cryptoObject, 0, mCancellationSignal, this, null);
-        mIcon.setImageResource(R.drawable.ic_fp_40px_pf);
+        mIcon.setImageResource(R.drawable.ic_fingerprint_black_24dp);
     }
 
     public void stopListening() {
@@ -122,7 +122,7 @@ public class PFFingerprintUIHelper extends FingerprintManagerCompat.Authenticati
                     mErrorTextView.getResources().getColor(R.color.hint_color, null));
             mErrorTextView.setText(
                     mErrorTextView.getResources().getString(R.string.fingerprint_hint_pf));
-            mIcon.setImageResource(R.drawable.ic_fp_40px_pf);
+            mIcon.setImageResource(R.drawable.ic_fingerprint_black_24dp);
         }
     };
 

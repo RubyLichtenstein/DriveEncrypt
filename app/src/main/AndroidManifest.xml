@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.driveencrypt">
+    package="com.ruby.driveencrypt">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
-        android:name=".MyApplication"
+        android:name="com.ruby.driveencrypt.MyApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -16,7 +16,7 @@
         android:theme="@style/AppTheme">
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.example.driveencrypt.fileprovider"
+            android:authorities="com.ruby.driveencrypt.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
@@ -25,22 +25,19 @@
         </provider>
 
         <activity
-            android:name=".gallery.pager.ImageActivity"
+            android:name="com.ruby.driveencrypt.gallery.pager.ImageActivity"
             android:theme="@style/Theme.ImageActivity" />
 
-        <activity android:name=".gallery.view.GalleryActivity">
+        <activity android:name="com.ruby.driveencrypt.gallery.view.GalleryActivity">
 
         </activity>
 
-        <activity android:name=".lockscreen.LockScreenActivity">
+        <activity android:name="com.ruby.driveencrypt.lockscreen.LockScreenActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        <activity android:name=".MainActivity">
-
         </activity>
     </application>
 </manifest>

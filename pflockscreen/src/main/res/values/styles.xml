@@ -12,12 +12,10 @@
     </style>
 
     <style name="PFLockScreenFingerPrintButtonStyle">
-        <item name="android:src">@drawable/fingerprint_lockscreen_pf</item>
         <item name="android:padding">20dp</item>
     </style>
 
     <style name="PFLockScreenDeleteButtonStyle">
-        <item name="android:src">@drawable/delete_lockscreen_pf</item>
         <item name="android:padding">20dp</item>
     </style>
 
