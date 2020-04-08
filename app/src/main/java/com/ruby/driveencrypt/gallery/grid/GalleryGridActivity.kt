@@ -7,11 +7,14 @@ import android.media.MediaScannerConnection
 import android.os.Bundle
 import android.os.Environment
 import android.view.View
-import android.view.WindowManager
 import android.view.WindowManager.LayoutParams.*
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
+import androidx.recyclerview.selection.SelectionPredicates
+import androidx.recyclerview.selection.SelectionTracker
+import androidx.recyclerview.selection.StableIdKeyProvider
+import androidx.recyclerview.selection.StorageStrategy
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.facebook.imagepipeline.common.ResizeOptions
@@ -49,6 +52,7 @@ class GalleryGridActivity : AppCompatActivity() {
         checkStoragePermission()
 
         googleSignInHelper = GoogleSignInHelper(this)
+
         viewGridAdapter = GalleryGridAdapter()
         filesManager = FilesManager.create(this)
 
@@ -77,7 +81,37 @@ class GalleryGridActivity : AppCompatActivity() {
             viewGridAdapter.mResizeOptions = mResizeOptions
         }
 
-//        filesManager.initFolderId(this)
+        val selectionTracker = SelectionTracker.Builder(
+            "mySelection",
+            recyclerView,
+            StableIdKeyProvider(recyclerView),
+            MyItemDetailsLookup(recyclerView),
+            StorageStrategy.createLongStorage()
+        ).withSelectionPredicate(
+            SelectionPredicates.createSelectAnything()
+        ).build()
+
+        selectionTracker.addObserver(
+            object : SelectionTracker.SelectionObserver<Long>() {
+                override fun onSelectionChanged() {
+                    super.onSelectionChanged()
+                    val isItemsSelected = !selectionTracker.selection.isEmpty
+
+                    multiselect_toolbar.visibility = if (isItemsSelected) {
+                        View.VISIBLE
+                    } else {
+                        View.GONE
+                    }
+
+                    grid_toolbar.visibility = if (isItemsSelected) {
+                        View.GONE
+                    } else {
+                        View.VISIBLE
+                    }
+                }
+            })
+
+        viewGridAdapter.tracker = selectionTracker
 
         pick_file.setOnClickListener {
             imageGalleryHelper.selectImages(this)
@@ -85,6 +119,20 @@ class GalleryGridActivity : AppCompatActivity() {
 
         pick_videos.setOnClickListener {
             imageGalleryHelper.selectVideos(this)
+        }
+
+        delete_selected.setOnClickListener {
+            val data = viewGridAdapter.data
+
+            selectionTracker
+                .selection
+                .forEach { selected ->
+                    val item = data.find { it.hashCode().toLong() == selected }!! // todo
+                    filesManager.deleteLocal(item.path)
+                }
+
+            selectionTracker.clearSelection()
+            model.showAllLocalFiles(this)
         }
 
 //        swipe_refresh.setOnRefreshListener {
@@ -127,9 +175,7 @@ class GalleryGridActivity : AppCompatActivity() {
                 empty_state.visibility = View.GONE
             }
 
-            it.forEach {
-                viewGridAdapter.add(it)
-            }
+            viewGridAdapter.addAll(it)
         })
 
         model.addFileLiveData.observe(this, Observer {

@@ -87,5 +87,6 @@ dependencies {
     implementation "net.gotev:uploadservice:4.2.1"
 
     implementation 'com.google.android.exoplayer:exoplayer:2.+'
+    implementation 'androidx.recyclerview:recyclerview-selection:1.1.0-rc01'
 
 }
