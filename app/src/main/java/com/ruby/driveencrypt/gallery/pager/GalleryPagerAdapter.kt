@@ -23,6 +23,10 @@ import kotlinx.android.synthetic.main.pager_image_list_item.view.*
 import kotlinx.android.synthetic.main.pager_video_list_item.view.*
 import java.io.File
 
+fun isVideoFile(path: String): Boolean {
+    val mimeType = getMimeType(path) ?: throw Exception("mime type in null, path: $path")
+    return mimeType.startsWith("video")
+}
 
 class GalleryPagerAdapter : BaseGalleryAdapter() {
 
@@ -39,7 +43,7 @@ class GalleryPagerAdapter : BaseGalleryAdapter() {
 
         return when {
             mimeType.startsWith("image") -> VIEW_TYPE_IMAGE
-            mimeType.startsWith("video") -> VIEW_TYPE_VIDEO
+            isVideoFile(path) -> VIEW_TYPE_VIDEO
             else -> throw Exception("mime type not supported, path: $path")
         }
     }

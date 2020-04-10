@@ -96,6 +96,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingTop="24dp"
+            android:background="@color/primaryColor"
             android:theme="@style/AppTheme"
             app:layout_scrollFlags="scroll|enterAlways">
 

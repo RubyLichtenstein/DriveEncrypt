@@ -1,6 +1,7 @@
 package com.ruby.driveencrypt.files
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.util.Log
 import java.io.File
 import java.io.IOException
@@ -35,6 +36,24 @@ object LocalFilesManager {
 //                } catch (e: IOException) {
 //                    Log.e("TAG", "", e)
 //                }
+            }
+    }
+
+    fun saveToLocalFiles(
+        context: Context,
+        fileName: String,
+        bitmap: Bitmap
+    ) {
+        context.openFileOutput(
+            fileName,
+            Context.MODE_PRIVATE
+        )
+            .use { out ->
+                bitmap.compress(
+                    Bitmap.CompressFormat.PNG,
+                    100,
+                    out
+                )
             }
     }
 

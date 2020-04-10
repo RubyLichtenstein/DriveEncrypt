@@ -1,6 +1,9 @@
 package com.ruby.driveencrypt.gallery.grid
 
+import android.graphics.Bitmap
+import android.media.ThumbnailUtils
 import android.net.Uri
+import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -9,11 +12,13 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.selection.ItemDetailsLookup
 import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.widget.RecyclerView
-import com.ruby.driveencrypt.R
-import com.ruby.driveencrypt.utils.displayMetrics
 import com.facebook.imagepipeline.common.ResizeOptions
 import com.facebook.imagepipeline.request.ImageRequestBuilder
+import com.ruby.driveencrypt.R
+import com.ruby.driveencrypt.files.LocalFilesManager
 import com.ruby.driveencrypt.gallery.BaseGalleryAdapter
+import com.ruby.driveencrypt.gallery.pager.isVideoFile
+import com.ruby.driveencrypt.utils.displayMetrics
 import kotlinx.android.synthetic.main.gallery_list_item.view.*
 import java.io.File
 
@@ -42,13 +47,39 @@ class GalleryGridAdapter : BaseGalleryAdapter() {
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val galleryItem = data[position]
-        val uri = Uri.fromFile(File(galleryItem.path))
+        val path = galleryItem.path
+        val context = holder.itemView.context
 
-        val imageRequest =
+        val imageRequest = if (isVideoFile(path)) {
+            val thumbnail =
+                ThumbnailUtils.createVideoThumbnail(path, MediaStore.Video.Thumbnails.MINI_KIND)
+
+            val file = File(path)
+            val fileName = "thumbnail_" + file.name.substringBefore(".") + "." + "PNG"
+
+            LocalFilesManager.saveToLocalFiles(
+                context,
+                fileName,
+                thumbnail
+            )
+
+            val thumbnailPath = context
+                .filesDir.path + "/" + fileName
+
+            val uri = Uri.fromFile(File(thumbnailPath))
+
             ImageRequestBuilder
                 .newBuilderWithSource(uri)
                 .setResizeOptions(mResizeOptions)
                 .build()
+        } else {
+            val uri = Uri.fromFile(File(path))
+
+            ImageRequestBuilder
+                .newBuilderWithSource(uri)
+                .setResizeOptions(mResizeOptions)
+                .build()
+        }
 
         holder.itemView.gallery_image.setImageRequest(imageRequest)
 
@@ -58,9 +89,6 @@ class GalleryGridAdapter : BaseGalleryAdapter() {
 
         tracker?.let {
             val selected = it.isSelected(galleryItem.hashCode().toLong())
-            val color = ContextCompat.getColor(holder.itemView.context, R.color.primaryColor)
-
-            holder.itemView.gallery_image.setBackgroundColor(color)
             holder.itemView.grid_item_check.visibility = if (selected) {
                 View.VISIBLE
             } else {
