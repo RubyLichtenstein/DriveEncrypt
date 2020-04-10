@@ -10,7 +10,7 @@ import com.beautycoder.pflockscreen.PinPreferences
 import com.ruby.driveencrypt.lockscreen.PFLockScreenFragment.OnPFLockScreenCodeCreateListener
 import com.ruby.driveencrypt.lockscreen.PFLockScreenFragment.OnPFLockScreenLoginListener
 import com.ruby.driveencrypt.R
-import com.ruby.driveencrypt.gallery.grid.GalleryGridActivity
+import com.ruby.driveencrypt.MainActivity
 
 class LockScreenActivity : AppCompatActivity() {
     private val pinPreferences = PinPreferences()
@@ -103,7 +103,7 @@ class LockScreenActivity : AppCompatActivity() {
     }
 
     private fun showMainActivity() {
-        val intent = Intent(this, GalleryGridActivity::class.java)
+        val intent = Intent(this, MainActivity::class.java)
         startActivity(intent)
         finish()
     }

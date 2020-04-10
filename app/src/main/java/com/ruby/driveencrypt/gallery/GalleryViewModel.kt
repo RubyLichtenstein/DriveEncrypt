@@ -1,22 +1,16 @@
 package com.ruby.driveencrypt.gallery
 
 import android.content.Context
-import android.util.Log
-import android.webkit.MimeTypeMap
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.google.android.exoplayer2.util.MimeTypes
 import com.ruby.driveencrypt.files.FilesManager
 import com.ruby.driveencrypt.files.LocalFilesManager
-import com.google.api.services.drive.model.File
-import com.ruby.driveencrypt.utils.getMimeType
 
 class GalleryViewModel : ViewModel() {
     val localFilesLiveData = MutableLiveData<List<String>>()
-    val addFileLiveData = MutableLiveData<String>()
+    val fileAddedLiveData = MutableLiveData<Unit>()
     val refreshLiveData = MutableLiveData<Boolean>()
-
-    val remoteFiles = mutableListOf<File>()
+    val isInSelectionModeLiveData = MutableLiveData<Boolean>()
 
     fun showAllLocalFiles(context: Context) {
         val localFilesPaths = LocalFilesManager.getLocalFilesPaths(context).sorted()
@@ -37,7 +31,7 @@ class GalleryViewModel : ViewModel() {
                     task
                         .addOnSuccessListener {
 //                            remoteFiles.add(it)
-                            addFileLiveData.value = it.path
+//                            fileAddedLiveData.value = it.path
                         }
                         .addOnCompleteListener {
                             counter--
@@ -47,5 +41,16 @@ class GalleryViewModel : ViewModel() {
                         }
                 }
             }
+    }
+
+    fun handleImagePath(context: Context, paths: List<String>) {
+        paths.forEach {
+            val file = java.io.File(it)
+            LocalFilesManager.saveToLocalFiles(context, file)
+        }
+
+//        deleteFile(file)
+        fileAddedLiveData.value = Unit
+//        filesManager.uploadFile(picturePath)?.addOnSuccessListener { }
     }
 }

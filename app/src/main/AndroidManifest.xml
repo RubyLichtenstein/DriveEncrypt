@@ -35,7 +35,7 @@
             android:theme="@style/Theme.ImageActivity" />
 
         <activity
-            android:name=".gallery.grid.GalleryGridActivity"
+            android:name=".MainActivity"
             android:theme="@style/AppTheme"></activity>
 
         <activity

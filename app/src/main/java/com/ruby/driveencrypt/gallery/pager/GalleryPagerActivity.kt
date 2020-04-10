@@ -22,10 +22,10 @@ import kotlinx.android.synthetic.main.activity_image.*
 
 class GalleryPagerActivity : AppCompatActivity() {
 
-    private lateinit var model: GalleryViewModel
     private var driveService: DriveService? = null
 
-    var isSystemUiShowed = true;
+    var isSystemUiShowed = true
+    val model: GalleryViewModel by viewModels()
 
     private fun hideSystemUI() {
         isSystemUiShowed = false
@@ -61,14 +61,11 @@ class GalleryPagerActivity : AppCompatActivity() {
         val filesManager = FilesManager.create(this)
         driveService = DriveService.getDriveService(this)
 
-        val model: GalleryViewModel by viewModels()
-        this.model = model
-
         val path = intent.getStringExtra(ARG_IMAGE_PATH)
 
-        setupBottomNavigation(filesManager)
 
         val imagesPagerAdapter = GalleryPagerAdapter()
+        setupBottomNavigation(filesManager, imagesPagerAdapter)
         imagesPagerAdapter.onTap = { view, galleryItem ->
             if (isSystemUiShowed) {
                 hideSystemUI()
@@ -97,7 +94,8 @@ class GalleryPagerActivity : AppCompatActivity() {
     }
 
     private fun setupBottomNavigation(
-        filesManager: FilesManager
+        filesManager: FilesManager,
+        imagesPagerAdapter: GalleryPagerAdapter
     ) {
         val bottomNavigationView = bottom_navigation as BottomNavigationView
 
@@ -108,7 +106,9 @@ class GalleryPagerActivity : AppCompatActivity() {
         bottomNavigationView.setOnNavigationItemReselectedListener {
             when (it.itemId) {
                 R.id.navigation_home -> {
-//                    shareImage(this, path)
+                    val index = image_pager.currentItem
+                    val item = imagesPagerAdapter.data.get(index)
+                    shareImage(this, item.path)
                 }
 
                 R.id.upload -> {
@@ -116,7 +116,7 @@ class GalleryPagerActivity : AppCompatActivity() {
                 }
 
                 R.id.delete -> {
-                    val fileIdToDelete = model.localFilesLiveData.value
+//                    val fileIdToDelete = model.localFilesLiveData.value
 //                    filesManager.deleteLocal(path)
                 }
             }

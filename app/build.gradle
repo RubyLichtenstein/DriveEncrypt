@@ -77,6 +77,7 @@ dependencies {
     // ViewModel
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
     implementation "androidx.activity:activity-ktx:$activity_version"
+    implementation "androidx.fragment:fragment-ktx:1.2.4"
     implementation "androidx.activity:activity:$activity_version"
 
     // LiveData
