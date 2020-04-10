@@ -38,7 +38,7 @@ abstract class BaseGalleryAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     fun addAll(newList: List<String>) {
-        val newItems = newList.map { GalleryItem(it) }.sortedBy { it.path }
+        val newItems = newList.map { GalleryItem(it) }
 
         val diffResult = DiffUtil.calculateDiff(
             GalleryGridDiffUtilCallback(

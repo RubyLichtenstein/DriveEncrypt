@@ -6,8 +6,11 @@ import android.content.Intent
 import android.media.MediaScannerConnection
 import android.os.Bundle
 import android.os.Environment
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
-import android.view.WindowManager.LayoutParams.*
+import android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
+import android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
@@ -26,6 +29,7 @@ import com.ruby.driveencrypt.gallery.GalleryViewModel
 import com.ruby.driveencrypt.gallery.MediaStorePicker
 import com.ruby.driveencrypt.gallery.UserDialog
 import com.ruby.driveencrypt.gallery.pager.GalleryPagerActivity
+import com.ruby.driveencrypt.lockscreen.LockScreenSettingsActivity
 import com.ruby.driveencrypt.signin.GoogleSignInHelper
 import kotlinx.android.synthetic.main.activity_gallery.*
 import pub.devrel.easypermissions.EasyPermissions
@@ -44,11 +48,12 @@ class GalleryGridActivity : AppCompatActivity() {
     private var mResizeOptions: ResizeOptions? = null
     private lateinit var googleSignInHelper: GoogleSignInHelper
 
+    var isFabsMenuVisable = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_gallery)
         window.addFlags(FLAG_TRANSLUCENT_STATUS or FLAG_TRANSLUCENT_NAVIGATION)
-
+        setSupportActionBar(grid_toolbar)
         checkStoragePermission()
 
         googleSignInHelper = GoogleSignInHelper(this)
@@ -113,12 +118,21 @@ class GalleryGridActivity : AppCompatActivity() {
 
         viewGridAdapter.tracker = selectionTracker
 
-        pick_file.setOnClickListener {
+        fab_menu.setOnClickListener {
             imageGalleryHelper.selectImages(this)
         }
 
-        pick_videos.setOnClickListener {
+        fab_menu.setOnClickListener {
+            isFabsMenuVisable = !isFabsMenuVisable
+            fabs_menu.visibility = if (isFabsMenuVisable) View.GONE else View.VISIBLE
+        }
+
+        fab_import_videos.setOnClickListener {
             imageGalleryHelper.selectVideos(this)
+        }
+
+        fab_import_photos.setOnClickListener {
+            imageGalleryHelper.selectImages(this)
         }
 
         delete_selected.setOnClickListener {
@@ -185,6 +199,25 @@ class GalleryGridActivity : AppCompatActivity() {
 //        model.refreshLiveData.observe(this, Observer {
 //            swipe_refresh.isRefreshing = it
 //        })
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        val id: Int = item.itemId
+        if (id == R.id.password_settings) {
+            val intent = Intent(this, LockScreenSettingsActivity::class.java)
+            startActivity(intent)
+            return true
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

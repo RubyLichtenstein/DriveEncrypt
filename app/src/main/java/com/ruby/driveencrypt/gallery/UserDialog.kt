@@ -6,13 +6,11 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.DialogFragment
 import com.ruby.driveencrypt.R
-import com.ruby.driveencrypt.lockscreen.LockScreenActivity
 import com.ruby.driveencrypt.signin.GoogleSignInHelper
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import kotlinx.android.synthetic.main.dialog_signin.view.*
 import kotlinx.android.synthetic.main.dialog_signin.view.googleSignInButton
-import kotlinx.android.synthetic.main.dialog_signin.view.lockscreen
 
 class UserDialog : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -41,10 +39,6 @@ class UserDialog : DialogFragment() {
                 view.googleSignInButton.setOnClickListener {
                     googleSignInHelper.signIn()
                 }
-            }
-
-            view.lockscreen.setOnClickListener { _ ->
-                LockScreenActivity.editPassword(it)
             }
 
             view.download_files.setOnClickListener { _ ->

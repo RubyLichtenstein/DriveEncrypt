@@ -45,7 +45,7 @@
         <item name="android:gravity">center</item>
     </style>
 
-    <style name="PasswordButton">
+    <style name="PasswordButton" parent="@style/Widget.MaterialComponents.Button.TextButton">
         <item name="android:layout_weight">1</item>
         <item name="android:layout_margin">4dp</item>
         <item name="android:padding">4dp</item>

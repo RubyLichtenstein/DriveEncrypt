@@ -19,7 +19,7 @@ class GalleryViewModel : ViewModel() {
     val remoteFiles = mutableListOf<File>()
 
     fun showAllLocalFiles(context: Context) {
-        val localFilesPaths = LocalFilesManager.getLocalFilesPaths(context)
+        val localFilesPaths = LocalFilesManager.getLocalFilesPaths(context).sorted()
         localFilesLiveData.value = localFilesPaths
     }
 

@@ -7,9 +7,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.beautycoder.pflockscreen.PFFLockScreenConfiguration
 import com.beautycoder.pflockscreen.PinPreferences
-import com.beautycoder.pflockscreen.fragments.PFLockScreenFragment
-import com.beautycoder.pflockscreen.fragments.PFLockScreenFragment.OnPFLockScreenCodeCreateListener
-import com.beautycoder.pflockscreen.fragments.PFLockScreenFragment.OnPFLockScreenLoginListener
+import com.ruby.driveencrypt.lockscreen.PFLockScreenFragment.OnPFLockScreenCodeCreateListener
+import com.ruby.driveencrypt.lockscreen.PFLockScreenFragment.OnPFLockScreenLoginListener
 import com.ruby.driveencrypt.R
 import com.ruby.driveencrypt.gallery.grid.GalleryGridActivity
 
@@ -82,6 +81,7 @@ class LockScreenActivity : AppCompatActivity() {
             .setNewCodeValidation(true)
             .setNewCodeValidationTitle("Please input code again")
             .setUseFingerprint(true)
+
         val fragment = PFLockScreenFragment()
 //        fragment.setOnLeftButtonClickListener {
 //            Toast.makeText(

@@ -66,7 +66,7 @@ class GalleryPagerActivity : AppCompatActivity() {
 
         val path = intent.getStringExtra(ARG_IMAGE_PATH)
 
-        setupBottomNavigation(path, filesManager)
+        setupBottomNavigation(filesManager)
 
         val imagesPagerAdapter = GalleryPagerAdapter()
         imagesPagerAdapter.onTap = { view, galleryItem ->
@@ -97,7 +97,6 @@ class GalleryPagerActivity : AppCompatActivity() {
     }
 
     private fun setupBottomNavigation(
-        path: String,
         filesManager: FilesManager
     ) {
         val bottomNavigationView = bottom_navigation as BottomNavigationView
@@ -109,16 +108,16 @@ class GalleryPagerActivity : AppCompatActivity() {
         bottomNavigationView.setOnNavigationItemReselectedListener {
             when (it.itemId) {
                 R.id.navigation_home -> {
-                    shareImage(this, path)
+//                    shareImage(this, path)
                 }
 
                 R.id.upload -> {
-                    upload(filesManager, path)
+//                    upload(filesManager, path)
                 }
 
                 R.id.delete -> {
                     val fileIdToDelete = model.localFilesLiveData.value
-                    filesManager.deleteLocal(path)
+//                    filesManager.deleteLocal(path)
                 }
             }
         }

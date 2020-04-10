@@ -7,13 +7,19 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
-        android:name="com.ruby.driveencrypt.MyApplication"
+        android:name=".MyApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+        <activity
+            android:name=".lockscreen.LockScreenSettingsActivity"
+            android:label="@string/title_activity_lock_screen_settings"
+            android:theme="@style/AppTheme"></activity>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.ruby.driveencrypt.fileprovider"
@@ -25,14 +31,16 @@
         </provider>
 
         <activity
-            android:name="com.ruby.driveencrypt.gallery.pager.GalleryPagerActivity"
+            android:name=".gallery.pager.GalleryPagerActivity"
             android:theme="@style/Theme.ImageActivity" />
 
-        <activity android:name="com.ruby.driveencrypt.gallery.grid.GalleryGridActivity">
+        <activity
+            android:name=".gallery.grid.GalleryGridActivity"
+            android:theme="@style/AppTheme"></activity>
 
-        </activity>
-
-        <activity android:name="com.ruby.driveencrypt.lockscreen.LockScreenActivity">
+        <activity
+            android:name=".lockscreen.LockScreenActivity"
+            android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -40,4 +48,5 @@
             </intent-filter>
         </activity>
     </application>
+
 </manifest>

@@ -26,8 +26,57 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <LinearLayout
+            android:id="@+id/fabs_menu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:animateLayoutChanges="true"
+            android:gravity="center"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toTopOf="@+id/fab_menu"
+            app:layout_constraintEnd_toEndOf="@+id/fab_menu"
+            app:layout_constraintStart_toStartOf="@+id/fab_menu">
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab_import_videos"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:src="@drawable/ic_videocam_black_24dp"
+                app:fabSize="mini"
+                app:layout_constraintBottom_toTopOf="@+id/fab_menu"
+                app:layout_constraintEnd_toEndOf="@+id/fab_menu"
+                app:layout_constraintStart_toStartOf="@+id/fab_menu"
+                app:layout_scrollFlags="scroll|enterAlways" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab_import_photos"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:src="@drawable/ic_photo_black_24dp"
+                app:fabSize="mini"
+                app:layout_constraintBottom_toTopOf="@+id/fab_menu"
+                app:layout_constraintEnd_toEndOf="@+id/fab_menu"
+                app:layout_constraintStart_toStartOf="@+id/fab_menu"
+                app:layout_scrollFlags="scroll|enterAlways" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab_take_photo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:src="@drawable/ic_photo_camera_black_24dp"
+                app:fabSize="mini"
+                app:layout_constraintBottom_toTopOf="@+id/fab_menu"
+                app:layout_constraintEnd_toEndOf="@+id/fab_menu"
+                app:layout_constraintStart_toStartOf="@+id/fab_menu"
+                app:layout_scrollFlags="scroll|enterAlways" />
+
+        </LinearLayout>
+
         <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/pick_file"
+            android:id="@+id/fab_menu"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
@@ -35,17 +84,6 @@
             android:src="@drawable/ic_add_black_24dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_scrollFlags="scroll|enterAlways" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/pick_videos"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginBottom="64dp"
-            android:src="@drawable/ic_add_black_24dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
             app:layout_scrollFlags="scroll|enterAlways" />
 
         <FrameLayout
@@ -70,8 +108,8 @@
         android:id="@+id/multiselect_toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/primaryColor"
         android:paddingTop="24dp"
+        android:theme="@style/AppTheme"
         android:visibility="gone">
 
         <ImageButton
@@ -95,20 +133,19 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingTop="24dp"
+            android:theme="@style/AppTheme"
             app:layout_scrollFlags="scroll|enterAlways">
 
             <ImageButton
                 android:id="@+id/user_dialog"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:layout_gravity="right"
+                android:layout_gravity="start"
                 android:layout_margin="16dp"
                 android:background="@android:color/transparent"
                 android:src="@drawable/ic_account_circle_black_24dp"
                 android:textColor="@color/primaryTextColor" />
 
         </androidx.appcompat.widget.Toolbar>
-
-
     </com.google.android.material.appbar.AppBarLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

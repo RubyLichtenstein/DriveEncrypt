@@ -1,4 +1,4 @@
-package com.beautycoder.pflockscreen.fragments
+package com.ruby.driveencrypt.lockscreen
 
 import android.app.AlertDialog
 import android.content.Context
@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.os.Vibrator
 import android.provider.Settings
 import android.text.TextUtils
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.OnLongClickListener
@@ -18,12 +17,13 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.core.hardware.fingerprint.FingerprintManagerCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import com.beautycoder.pflockscreen.PFFLockScreenConfiguration
 import com.beautycoder.pflockscreen.PinPreferences
-import com.beautycoder.pflockscreen.R
+import com.beautycoder.pflockscreen.fragments.PFFingerprintAuthDialogFragment
+import com.beautycoder.pflockscreen.fragments.PFFingerprintAuthListener
 import com.beautycoder.pflockscreen.views.PFCodeView
 import com.beautycoder.pflockscreen.views.PFCodeView.OnPFCodeListener
+import com.ruby.driveencrypt.R
 
 class PFLockScreenFragment : Fragment() {
     val pinPreferences = PinPreferences()
@@ -193,12 +193,14 @@ class PFLockScreenFragment : Fragment() {
                 showNoFingerprintDialog()
                 return@OnClickListener
             }
-            val fragment = PFFingerprintAuthDialogFragment()
+            val fragment =
+                PFFingerprintAuthDialogFragment()
             fragment.show(
                 fragmentManager!!,
                 FINGERPRINT_DIALOG_FRAGMENT_TAG
             )
-            fragment.setAuthListener(object : PFFingerprintAuthListener {
+            fragment.setAuthListener(object :
+                PFFingerprintAuthListener {
                 override fun onAuthenticated() {
                     if (mLoginListener != null) {
                         mLoginListener!!.onFingerprintSuccessful()
