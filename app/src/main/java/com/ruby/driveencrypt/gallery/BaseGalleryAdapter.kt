@@ -21,7 +21,9 @@ abstract class BaseGalleryAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder
             }
     }
 
-    inner class VideoViewHolder(val view: View) : RecyclerView.ViewHolder(view)
+    inner class VideoViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
+
+    }
 
     override fun getItemCount() = data.size
 

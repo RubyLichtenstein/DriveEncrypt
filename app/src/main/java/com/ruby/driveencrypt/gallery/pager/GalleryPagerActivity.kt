@@ -25,11 +25,6 @@ class GalleryPagerActivity : AppCompatActivity() {
     private lateinit var model: GalleryViewModel
     private var driveService: DriveService? = null
 
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-//        if (hasFocus) hideSystemUI()
-    }
-
     var isSystemUiShowed = true;
 
     private fun hideSystemUI() {
@@ -85,6 +80,13 @@ class GalleryPagerActivity : AppCompatActivity() {
         }
 
         image_pager.adapter = imagesPagerAdapter
+        image_pager.setPageTransformer { page, position ->
+//            imagesPagerAdapter.player?.let {
+//                if(it.isPlaying){
+//                    it.stop()
+//                }
+//            }
+        }
 
         model.showAllLocalFiles(this)
         model.localFilesLiveData.observe(this, Observer {

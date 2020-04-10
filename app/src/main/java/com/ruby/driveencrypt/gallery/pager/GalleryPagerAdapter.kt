@@ -19,7 +19,6 @@ import com.ruby.driveencrypt.R
 import com.ruby.driveencrypt.gallery.BaseGalleryAdapter
 import com.ruby.driveencrypt.gallery.GalleryItem
 import com.ruby.driveencrypt.utils.getMimeType
-import com.ruby.driveencrypt.utils.window
 import kotlinx.android.synthetic.main.pager_image_list_item.view.*
 import kotlinx.android.synthetic.main.pager_video_list_item.view.*
 import java.io.File
@@ -52,6 +51,9 @@ class GalleryPagerAdapter : BaseGalleryAdapter() {
         val galleryItem = data[position]
         val uri = Uri.fromFile(File(galleryItem.path))
 
+//        holder.itemView.setOnClickListener {
+//            onTap?.invoke(it, galleryItem)
+//        }
         when (holder) {
             is ImageViewHolder -> {
 
@@ -85,21 +87,43 @@ class GalleryPagerAdapter : BaseGalleryAdapter() {
                 }
             }
             is VideoViewHolder -> {
-                val playerView = holder.itemView.gallery_player_view
-                val context = holder.itemView.context
-                val player = SimpleExoPlayer.Builder(context).build()
-                playerView.setPlayer(player)
-
-                val dataSourceFactory: DataSource.Factory = DefaultDataSourceFactory(
-                    context,
-                    Util.getUserAgent(context, "yourApplicationName")
-                )
-
-                val videoSource: MediaSource = ProgressiveMediaSource.Factory(dataSourceFactory)
-                    .createMediaSource(uri)
-                player.prepare(videoSource)
+                bindVideo(holder, uri, galleryItem)
             }
         }
+    }
+
+    var player: SimpleExoPlayer? = null
+    private fun bindVideo(
+        holder: RecyclerView.ViewHolder,
+        uri: Uri,
+        galleryItem: GalleryItem
+    ) {
+        val playerView = holder.itemView.gallery_player_view
+        val context = holder.itemView.context
+        player = SimpleExoPlayer.Builder(context).build()
+        playerView.setPlayer(player)
+        playerView.setOnClickListener {
+            onTap?.invoke(it, galleryItem)
+        }
+
+        val dataSourceFactory: DataSource.Factory = DefaultDataSourceFactory(
+            context,
+            Util.getUserAgent(context, "yourApplicationName")
+        )
+
+        val videoSource: MediaSource = ProgressiveMediaSource.Factory(dataSourceFactory)
+            .createMediaSource(uri)
+        player?.prepare(videoSource)
+    }
+
+    override fun onViewDetachedFromWindow(holder: RecyclerView.ViewHolder) {
+        super.onViewDetachedFromWindow(holder)
+//        player?.stop()
+    }
+
+    override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
+        super.onViewRecycled(holder)
+//        player?.stop()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
