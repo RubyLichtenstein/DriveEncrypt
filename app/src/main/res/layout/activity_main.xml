@@ -69,6 +69,18 @@
                 app:layout_constraintStart_toStartOf="@+id/fab_menu"
                 app:layout_scrollFlags="scroll|enterAlways" />
 
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab_take_video"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:src="@drawable/ic_play_circle_filled_black_24dp"
+                app:fabSize="mini"
+                app:layout_constraintBottom_toTopOf="@+id/fab_menu"
+                app:layout_constraintEnd_toEndOf="@+id/fab_menu"
+                app:layout_constraintStart_toStartOf="@+id/fab_menu"
+                app:layout_scrollFlags="scroll|enterAlways" />
+
         </LinearLayout>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -95,8 +107,8 @@
             android:id="@+id/grid_toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="24dp"
             android:background="@color/primaryColor"
+            android:paddingTop="24dp"
             android:theme="@style/AppTheme"
             app:layout_scrollFlags="scroll|enterAlways">
 

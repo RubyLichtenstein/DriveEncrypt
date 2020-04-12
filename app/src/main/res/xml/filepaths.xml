@@ -3,4 +3,9 @@
     <files-path
         name="myimages"
         path="/" />
+
+    <external-path
+        name="my_images"
+        path="Android/data/com.ruby.driveencrypt/files/Pictures" />
+
 </paths>

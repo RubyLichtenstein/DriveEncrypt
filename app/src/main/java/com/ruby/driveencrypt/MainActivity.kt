@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.media.MediaScannerConnection
+import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.view.Menu
@@ -14,17 +15,19 @@ import android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
+import com.facebook.common.util.UriUtil
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.ruby.driveencrypt.files.FilesManager
-import com.ruby.driveencrypt.gallery.GalleryViewModel
-import com.ruby.driveencrypt.gallery.MediaStorePicker
-import com.ruby.driveencrypt.gallery.UserDialog
+import com.ruby.driveencrypt.gallery.*
 import com.ruby.driveencrypt.gallery.grid.GalleryGridFragment
 import com.ruby.driveencrypt.lockscreen.LockScreenSettingsActivity
 import com.ruby.driveencrypt.signin.GoogleSignInHelper
 import kotlinx.android.synthetic.main.activity_main.*
 import pub.devrel.easypermissions.EasyPermissions
 import java.io.File
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -33,6 +36,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var googleSignInHelper: GoogleSignInHelper
     var isFabsMenuVisable = false
     private val model: GalleryViewModel by viewModels()
+
+    private val mediaCapture = MediaCapture()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,7 +48,8 @@ class MainActivity : AppCompatActivity() {
 
         supportFragmentManager
             .beginTransaction()
-            .replace(R.id.main_fragment_holder,
+            .replace(
+                R.id.main_fragment_holder,
                 GalleryGridFragment()
             )
             .commit()
@@ -69,6 +75,13 @@ class MainActivity : AppCompatActivity() {
             imageGalleryHelper.selectImages(this)
         }
 
+        fab_take_photo.setOnClickListener {
+            mediaCapture.dispatchTakePictureIntent(this)
+        }
+
+        fab_take_video.setOnClickListener {
+            mediaCapture.dispatchTakeVideoIntent(this)
+        }
 
         model.isInSelectionModeLiveData.observe(this, Observer {
             grid_toolbar.visibility = if (it) {
@@ -87,7 +100,8 @@ class MainActivity : AppCompatActivity() {
     private fun checkStoragePermission() {
         val galleryPermissions = arrayOf(
             Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.CAMERA
         )
 
         if (EasyPermissions.hasPermissions(this, *galleryPermissions)) {
@@ -121,28 +135,43 @@ class MainActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
+    override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
+        super.onActivityResult(requestCode, resultCode, intent)
+
+        if (resultCode == Activity.RESULT_CANCELED) return
+
         if (requestCode == googleSignInHelper.RC_SIGN_IN) {
             // The Task returned from this call is always completed, no need to attach
             // a listener.
             val task =
-                GoogleSignIn.getSignedInAccountFromIntent(data)
+                GoogleSignIn.getSignedInAccountFromIntent(intent)
             googleSignInHelper.handleSignInResult(task)
         }
 
-        if (resultCode != Activity.RESULT_CANCELED) {
+
+        if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {
-                1 -> if (resultCode == Activity.RESULT_OK && data != null) {
+                REQUEST_PICK_IMAGES, REQUEST_PICK_VIDEO -> if (intent != null) {
                     imageGalleryHelper.onResultFromGallery(
-                        data,
+                        intent,
                         contentResolver
                     ) { paths ->
                         model.handleImagePath(this, paths)
                     }
                 }
             }
+
+            if (requestCode == REQUEST_TAKE_PHOTO) {
+                model.handleImagePath(this, listOf(mediaCapture.currentPhotoPath!!))
+            }
+
+            if (requestCode == REQUEST_VIDEO_CAPTURE) {
+                val videoUri: Uri = intent!!.data!!
+                val path = UriUtil.getRealPathFromUri(contentResolver, videoUri)
+                model.handleImagePath(this, listOf(path!!))
+            }
         }
+
     }
 
     private fun deleteFile(file: File) {
