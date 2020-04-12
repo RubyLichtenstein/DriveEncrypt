@@ -172,13 +172,15 @@
                     android:textColor="@android:color/white"
                     tools:visibility="gone" />
 
-                <ImageButton
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_finger_print"
-                    style="@style/PasswordImage"
+                    style="@style/PasswordButton"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_gravity="center"
-                    android:src="@drawable/ic_fingerprint_black_24dp" />
+                    app:icon="@drawable/ic_fingerprint_black_24dp"
+                    app:iconGravity="textStart"
+                    app:iconPadding="0dp" />
             </FrameLayout>
 
         </TableRow>

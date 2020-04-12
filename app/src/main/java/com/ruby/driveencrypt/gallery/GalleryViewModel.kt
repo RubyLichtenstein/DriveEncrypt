@@ -3,6 +3,8 @@ package com.ruby.driveencrypt.gallery
 import android.content.Context
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.google.android.gms.tasks.Tasks
+import com.ruby.driveencrypt.drive.log
 import com.ruby.driveencrypt.files.FilesManager
 import com.ruby.driveencrypt.files.LocalFilesManager
 
@@ -44,13 +46,21 @@ class GalleryViewModel : ViewModel() {
     }
 
     fun handleImagePath(context: Context, paths: List<String>) {
-        paths.forEach {
+        val tasks = paths.map {
             val file = java.io.File(it)
             LocalFilesManager.saveToLocalFiles(context, file)
+                .log(
+                    "save_image",
+                    file.name
+                )
         }
 
+        Tasks.whenAllComplete(tasks)
+            .addOnCompleteListener {
+                fileAddedLiveData.value = Unit
+            }
+
 //        deleteFile(file)
-        fileAddedLiveData.value = Unit
 //        filesManager.uploadFile(picturePath)?.addOnSuccessListener { }
     }
 }

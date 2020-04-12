@@ -5,10 +5,8 @@ import android.app.ActivityOptions
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.view.WindowManager
 import android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
 import android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
@@ -18,7 +16,7 @@ import com.ruby.driveencrypt.gallery.GalleryViewModel
 import com.ruby.driveencrypt.share.shareImage
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.ruby.driveencrypt.drive.DriveService
-import kotlinx.android.synthetic.main.activity_image.*
+import kotlinx.android.synthetic.main.activity_gallery_pager.*
 
 class GalleryPagerActivity : AppCompatActivity() {
 
@@ -55,7 +53,7 @@ class GalleryPagerActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_image)
+        setContentView(R.layout.activity_gallery_pager)
         window.addFlags(FLAG_TRANSLUCENT_STATUS or FLAG_TRANSLUCENT_NAVIGATION)
 
         val filesManager = FilesManager.create(this)
@@ -74,6 +72,12 @@ class GalleryPagerActivity : AppCompatActivity() {
                 showSystemUI()
                 bottom_navigation.visibility = View.VISIBLE
             }
+        }
+
+        imagesPagerAdapter.onTapVideo = { view, uri ->
+            val intent = Intent(this, VideoActivity::class.java)
+            intent.putExtra(VideoActivity.ARG_URI, uri)
+            startActivity(intent)
         }
 
         image_pager.adapter = imagesPagerAdapter
@@ -124,20 +128,20 @@ class GalleryPagerActivity : AppCompatActivity() {
     }
 
     private fun upload(filesManager: FilesManager, path: String) {
-        Toast
-            .makeText(this, "start upload...", Toast.LENGTH_SHORT)
-            .show()
-
-        progress.visibility = View.VISIBLE
-        filesManager
-            .uploadFile(path)
-            ?.addOnSuccessListener {
-                progress.visibility = View.GONE
-
-                Toast
-                    .makeText(this, "file uploaded", Toast.LENGTH_SHORT)
-                    .show()
-            }
+//        Toast
+//            .makeText(this, "start upload...", Toast.LENGTH_SHORT)
+//            .show()
+//
+//        progress.visibility = View.VISIBLE
+//        filesManager
+//            .uploadFile(path)
+//            ?.addOnSuccessListener {
+//                progress.visibility = View.GONE
+//
+//                Toast
+//                    .makeText(this, "file uploaded", Toast.LENGTH_SHORT)
+//                    .show()
+//            }
     }
 
     companion object {

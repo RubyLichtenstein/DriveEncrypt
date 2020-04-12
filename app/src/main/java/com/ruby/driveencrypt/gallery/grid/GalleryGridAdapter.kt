@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.selection.ItemDetailsLookup
 import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.widget.RecyclerView
+import com.facebook.common.media.MediaUtils
 import com.facebook.imagepipeline.common.ResizeOptions
 import com.facebook.imagepipeline.request.ImageRequestBuilder
 import com.ruby.driveencrypt.R
@@ -49,32 +50,19 @@ class GalleryGridAdapter : BaseGalleryAdapter() {
         val galleryItem = data[position]
         val path = galleryItem.path
         val context = holder.itemView.context
-
         val imageRequest = if (isVideoFile(path)) {
-            val thumbnail =
-                ThumbnailUtils.createVideoThumbnail(path, MediaStore.Video.Thumbnails.MINI_KIND)
-
-            val file = File(path)
-            val fileName = "thumbnail_" + file.name.substringBefore(".") + "." + "PNG"
-
-            LocalFilesManager.saveToLocalFiles(
-                context,
-                fileName,
-                thumbnail
-            )
-
-            val thumbnailPath = context
-                .filesDir.path + "/" + fileName
-
-            val uri = Uri.fromFile(File(thumbnailPath))
-
+            holder.itemView.grid_item_video_play.visibility = View.VISIBLE
+//            val file = File(path)
+//            val thumbnailFileName = LocalFilesManager.thumbnailFileName(file.name)
+//            val tnPath = context.filesDir.path + "/" + thumbnailFileName
+            val uri = Uri.fromFile(File(path))
             ImageRequestBuilder
                 .newBuilderWithSource(uri)
                 .setResizeOptions(mResizeOptions)
                 .build()
         } else {
+            holder.itemView.grid_item_video_play.visibility = View.GONE
             val uri = Uri.fromFile(File(path))
-
             ImageRequestBuilder
                 .newBuilderWithSource(uri)
                 .setResizeOptions(mResizeOptions)
