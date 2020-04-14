@@ -86,7 +86,7 @@ class GalleryGridFragment : Fragment() {
 
         recyclerView.addOnLayoutChangeListener { view, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
             val imageSize = (right - left) / SPAN_COUNT
-                mResizeOptions = ResizeOptions(imageSize, imageSize)
+            mResizeOptions = ResizeOptions(imageSize, imageSize)
             viewGridAdapter.mResizeOptions = mResizeOptions
         }
 
@@ -134,7 +134,20 @@ class GalleryGridFragment : Fragment() {
         clear_selection.setOnClickListener {
             selectionTracker.clearSelection()
         }
+
+        select_all.setOnClickListener {
+            val keys = viewGridAdapter
+                .data
+                .map { it.hashCode().toLong() }
+                .asIterable()
+
+            selectionTracker.setItemsSelected(
+                keys,
+                true
+            )
+        }
     }
+
 
     private fun getSelectedItems(selectionTracker: SelectionTracker<Long>): List<GalleryItem> {
         val data = viewGridAdapter.data

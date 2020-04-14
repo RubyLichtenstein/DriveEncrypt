@@ -1,5 +1,6 @@
 package com.ruby.driveencrypt.gallery.grid
 
+import android.animation.ValueAnimator
 import android.content.Context
 import android.media.ThumbnailUtils
 import android.net.Uri
@@ -7,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.recyclerview.selection.ItemDetailsLookup
 import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.widget.RecyclerView
@@ -17,6 +19,7 @@ import com.ruby.driveencrypt.files.LocalFilesManager
 import com.ruby.driveencrypt.gallery.BaseGalleryAdapter
 import com.ruby.driveencrypt.gallery.pager.isVideoFile
 import com.ruby.driveencrypt.utils.displayMetrics
+import com.ruby.driveencrypt.utils.setMargins
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.gallery_list_item.view.*
 import java.io.File
@@ -47,6 +50,7 @@ class GalleryGridAdapter : BaseGalleryAdapter() {
         return ImageViewHolder(rootView)
     }
 
+
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val galleryItem = data[position]
         val path = galleryItem.path
@@ -58,33 +62,49 @@ class GalleryGridAdapter : BaseGalleryAdapter() {
             Uri.fromFile(File(LocalFilesManager.tnPath(context, file)))
         } else {
             holder.itemView.grid_item_video_play.visibility = View.GONE
-            Uri.fromFile(File(path))
+            val file = File(path)
+            Uri.fromFile(File(LocalFilesManager.tnPath(context, file)))
         }
+
+        val size = context.displayMetrics().widthPixels / GRID_ITEMS
+
+        val galleryImage = holder.itemView
+            .gallery_image
 
         Picasso
             .get()
             .load(uri)
-            .apply {
-                if (mResizeOptions != null) {
-                    resize(mResizeOptions!!.width, mResizeOptions!!.height)
-                    centerCrop()
-                }
-            }
-            .into(holder.itemView.gallery_image)
+            .resize(size, size)
+            .centerCrop()
+            .into(galleryImage)
 
-//        holder.itemView.gallery_image.setImageRequest(imageRequest)
-        holder.itemView.gallery_image.setOnClickListener {
+        galleryImage.setOnClickListener {
             onClick?.invoke(it, galleryItem)
         }
 
         tracker?.let {
             val selected = it.isSelected(galleryItem.hashCode().toLong())
-            holder.itemView.grid_item_check.visibility = if (selected) {
-                View.VISIBLE
+            if (selected) {
+                holder.itemView.grid_item_check.visibility = View.VISIBLE
+                animateScale(galleryImage, 0.8F)
             } else {
-                View.GONE
+                holder.itemView.grid_item_check.visibility = View.GONE
+                animateScale(galleryImage, 1.0F)
             }
         }
+    }
+
+    private fun animateScale(galleryImage: ImageView, scale: Float) {
+        galleryImage
+            .animate()
+            .scaleX(scale)
+            .scaleY(scale)
+            .setDuration(200)
+            .withEndAction {
+                galleryImage.scaleX = scale
+                galleryImage.scaleY = scale
+            }
+            .start()
     }
 
     override fun getItemId(position: Int): Long = data[position].hashCode().toLong()

@@ -7,7 +7,6 @@ import android.provider.MediaStore
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import com.ruby.driveencrypt.gallery.pager.isVideoFile
-import com.ruby.driveencrypt.utils.displayMetrics
 import java.io.File
 import java.io.FileInputStream
 import java.util.concurrent.Callable
@@ -61,7 +60,7 @@ object LocalFilesManager {
         val thumbnail = ThumbnailUtils.createVideoThumbnail(
             file.path,
             MediaStore.Video.Thumbnails.FULL_SCREEN_KIND
-        )
+        )!!
 
 // val size = context.displayMetrics().widthPixels / 3
 // cropCenter(thumbnail, size)
@@ -78,7 +77,7 @@ object LocalFilesManager {
 
         val thumbnail = ThumbnailUtils.createImageThumbnail(
             file.path,
-            MediaStore.Video.Thumbnails.FULL_SCREEN_KIND
+            MediaStore.Images.Thumbnails.FULL_SCREEN_KIND
         )!!
 
 // val size = context.displayMetrics().widthPixels / 3
