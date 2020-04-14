@@ -1,18 +1,15 @@
 package com.ruby.driveencrypt.gallery.grid
 
-import android.graphics.Bitmap
+import android.content.Context
 import android.media.ThumbnailUtils
 import android.net.Uri
-import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.selection.ItemDetailsLookup
 import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.widget.RecyclerView
-import com.facebook.common.media.MediaUtils
 import com.facebook.imagepipeline.common.ResizeOptions
 import com.facebook.imagepipeline.request.ImageRequestBuilder
 import com.ruby.driveencrypt.R
@@ -20,8 +17,11 @@ import com.ruby.driveencrypt.files.LocalFilesManager
 import com.ruby.driveencrypt.gallery.BaseGalleryAdapter
 import com.ruby.driveencrypt.gallery.pager.isVideoFile
 import com.ruby.driveencrypt.utils.displayMetrics
+import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.gallery_list_item.view.*
 import java.io.File
+
+val GRID_ITEMS = 3
 
 class GalleryGridAdapter : BaseGalleryAdapter() {
     var mResizeOptions: ResizeOptions? = null
@@ -42,7 +42,8 @@ class GalleryGridAdapter : BaseGalleryAdapter() {
                 false
             )
 
-        rootView.gallery_image.layoutParams.height = rootView.displayMetrics().widthPixels / 3
+        rootView.gallery_image.layoutParams.height =
+            rootView.displayMetrics().widthPixels / GRID_ITEMS
         return ImageViewHolder(rootView)
     }
 
@@ -50,27 +51,28 @@ class GalleryGridAdapter : BaseGalleryAdapter() {
         val galleryItem = data[position]
         val path = galleryItem.path
         val context = holder.itemView.context
-        val imageRequest = if (isVideoFile(path)) {
+
+        val uri = if (isVideoFile(path)) {
             holder.itemView.grid_item_video_play.visibility = View.VISIBLE
-//            val file = File(path)
-//            val thumbnailFileName = LocalFilesManager.thumbnailFileName(file.name)
-//            val tnPath = context.filesDir.path + "/" + thumbnailFileName
-            val uri = Uri.fromFile(File(path))
-            ImageRequestBuilder
-                .newBuilderWithSource(uri)
-                .setResizeOptions(mResizeOptions)
-                .build()
+            val file = File(path)
+            Uri.fromFile(File(LocalFilesManager.tnPath(context, file)))
         } else {
             holder.itemView.grid_item_video_play.visibility = View.GONE
-            val uri = Uri.fromFile(File(path))
-            ImageRequestBuilder
-                .newBuilderWithSource(uri)
-                .setResizeOptions(mResizeOptions)
-                .build()
+            Uri.fromFile(File(path))
         }
 
-        holder.itemView.gallery_image.setImageRequest(imageRequest)
+        Picasso
+            .get()
+            .load(uri)
+            .apply {
+                if (mResizeOptions != null) {
+                    resize(mResizeOptions!!.width, mResizeOptions!!.height)
+                    centerCrop()
+                }
+            }
+            .into(holder.itemView.gallery_image)
 
+//        holder.itemView.gallery_image.setImageRequest(imageRequest)
         holder.itemView.gallery_image.setOnClickListener {
             onClick?.invoke(it, galleryItem)
         }

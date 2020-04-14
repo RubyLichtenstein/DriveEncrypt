@@ -48,7 +48,7 @@ class GalleryViewModel : ViewModel() {
     fun handleImagePath(context: Context, paths: List<String>) {
         val tasks = paths.map {
             val file = java.io.File(it)
-            LocalFilesManager.saveToLocalFiles(context, file)
+            LocalFilesManager.saveLocalFiles(context, file)
                 .log(
                     "save_image",
                     file.name

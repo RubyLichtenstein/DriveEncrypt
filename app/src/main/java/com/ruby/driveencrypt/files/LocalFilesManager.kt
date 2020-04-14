@@ -6,14 +6,22 @@ import android.media.ThumbnailUtils
 import android.provider.MediaStore
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
-import java.io.*
+import com.ruby.driveencrypt.gallery.pager.isVideoFile
+import com.ruby.driveencrypt.utils.displayMetrics
+import java.io.File
+import java.io.FileInputStream
 import java.util.concurrent.Callable
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
+
 object LocalFilesManager {
     private val mExecutor: Executor =
         Executors.newCachedThreadPool()
+
+    const val DIR_VIDEO = "video"
+    const val DIR_IMAGE = "image"
+    const val DIR_THUMBNAIL = "thumbnail"
 
     private fun <V> execute(call: () -> V): Task<V> {
         return Tasks.call(mExecutor, Callable {
@@ -27,43 +35,77 @@ object LocalFilesManager {
         })
     }
 
-    fun getLocalFilesPaths(context: Context): List<String> {
-        return context
-            .filesDir
-            .listFiles()
-            .map { it.path }
-    }
+    fun tnPath(context: Context, file: File) =
+        context.filesDir.path + "/" + thumbnailFileName(
+            file.name
+        )
 
-    fun getLocalFilesNames(context: Context): List<String> {
-        return context
-            .filesDir
-            .listFiles()
+    fun getLocalFilesPaths(context: Context) =
+        filesDirListFiles(context)
+            .map { it.path }
+
+    fun getLocalFilesNames(context: Context) =
+        filesDirListFiles(context)
             .map { it.name }
-    }
 
     fun thumbnailFileName(originalName: String) =
         "thumbnail_${originalName.substringBefore(".")}.PNG"
 
+    fun cropCenter(bitmap: Bitmap, size: Int): Bitmap {
+        return ThumbnailUtils.extractThumbnail(bitmap, size, size)
+    }
+
     private fun saveVideoThumbnail(context: Context, file: File) {
         val fileName = thumbnailFileName(file.name)
 
-        val thumbnail =
-            ThumbnailUtils.createVideoThumbnail(
-                file.path,
-                MediaStore.Video.Thumbnails.MINI_KIND
-            )
+        val thumbnail = ThumbnailUtils.createVideoThumbnail(
+            file.path,
+            MediaStore.Video.Thumbnails.FULL_SCREEN_KIND
+        )
 
-        saveToLocalFiles(
+// val size = context.displayMetrics().widthPixels / 3
+// cropCenter(thumbnail, size)
+
+        saveBitmapLocalFiles(
             context,
             fileName,
             thumbnail
         )
     }
 
-    fun saveToLocalFiles(
+    private fun saveImageThumbnail(context: Context, file: File) {
+        val fileName = thumbnailFileName(file.name)
+
+        val thumbnail = ThumbnailUtils.createImageThumbnail(
+            file.path,
+            MediaStore.Video.Thumbnails.FULL_SCREEN_KIND
+        )!!
+
+// val size = context.displayMetrics().widthPixels / 3
+// cropCenter(thumbnail, size)
+
+        saveBitmapLocalFiles(
+            context,
+            fileName,
+            thumbnail
+        )
+    }
+
+    fun saveLocalFiles(
         context: Context,
         file: File
-    ) = execute {
+    ): Task<Unit> {
+        return execute {
+            if (isVideoFile(file.name))
+                saveVideoThumbnail(context, file)
+            else
+                saveImageThumbnail(context, file)
+
+            saveLocalFile(context, file)
+        }
+    }
+
+    private fun saveLocalFile(context: Context, file: File) {
         context.openFileOutput(
             file.name,
             Context.MODE_PRIVATE
@@ -77,16 +119,16 @@ object LocalFilesManager {
                         out.write(buff, 0, len)
                     }
                 }
-// todo try catch IO
-//                try {
-//                out.write(file.readBytes())
-//                } catch (e: IOException) {
-//                    Log.e("TAG", "", e)
-//                }
+                // todo try catch IO
+                //                try {
+                //                out.write(file.readBytes())
+                //                } catch (e: IOException) {
+                //                    Log.e("TAG", "", e)
+                //                }
             }
     }
 
-    fun saveToLocalFiles(
+    fun saveBitmapLocalFiles(
         context: Context,
         fileName: String,
         bitmap: Bitmap
@@ -105,9 +147,13 @@ object LocalFilesManager {
     }
 
     fun deleteAllLocalFiles(context: Context) {
-        context
+        filesDirListFiles(context)
+            .forEach { it.delete() }
+    }
+
+    private fun filesDirListFiles(context: Context): Array<out File> {
+        return context
             .filesDir
             .listFiles()
-            .forEach { it.delete() }
     }
 }

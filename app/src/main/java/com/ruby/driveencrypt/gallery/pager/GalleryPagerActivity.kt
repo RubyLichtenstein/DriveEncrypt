@@ -10,20 +10,20 @@ import android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.ruby.driveencrypt.R
+import com.ruby.driveencrypt.drive.DriveService
 import com.ruby.driveencrypt.files.FilesManager
+import com.ruby.driveencrypt.gallery.GalleryItem
 import com.ruby.driveencrypt.gallery.GalleryViewModel
 import com.ruby.driveencrypt.share.shareImage
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.ruby.driveencrypt.drive.DriveService
 import kotlinx.android.synthetic.main.activity_gallery_pager.*
 
 class GalleryPagerActivity : AppCompatActivity() {
 
     private var driveService: DriveService? = null
-
     var isSystemUiShowed = true
-    val model: GalleryViewModel by viewModels()
+    private val model: GalleryViewModel by viewModels()
 
     private fun hideSystemUI() {
         isSystemUiShowed = false
@@ -56,11 +56,17 @@ class GalleryPagerActivity : AppCompatActivity() {
         setContentView(R.layout.activity_gallery_pager)
         window.addFlags(FLAG_TRANSLUCENT_STATUS or FLAG_TRANSLUCENT_NAVIGATION)
 
+        setSupportActionBar(gallery_pager_toolbar)
+        supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            setDisplayShowHomeEnabled(true)
+            title = ""
+        }
+
         val filesManager = FilesManager.create(this)
         driveService = DriveService.getDriveService(this)
 
         val path = intent.getStringExtra(ARG_IMAGE_PATH)
-
 
         val imagesPagerAdapter = GalleryPagerAdapter()
         setupBottomNavigation(filesManager, imagesPagerAdapter)
@@ -68,9 +74,11 @@ class GalleryPagerActivity : AppCompatActivity() {
             if (isSystemUiShowed) {
                 hideSystemUI()
                 bottom_navigation.visibility = View.GONE
+                gallery_pager_toolbar.visibility = View.GONE
             } else {
                 showSystemUI()
                 bottom_navigation.visibility = View.VISIBLE
+                gallery_pager_toolbar.visibility = View.VISIBLE
             }
         }
 
@@ -97,6 +105,11 @@ class GalleryPagerActivity : AppCompatActivity() {
         })
     }
 
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressed()
+        return true
+    }
+
     private fun setupBottomNavigation(
         filesManager: FilesManager,
         imagesPagerAdapter: GalleryPagerAdapter
@@ -110,8 +123,7 @@ class GalleryPagerActivity : AppCompatActivity() {
         bottomNavigationView.setOnNavigationItemReselectedListener {
             when (it.itemId) {
                 R.id.navigation_home -> {
-                    val index = image_pager.currentItem
-                    val item = imagesPagerAdapter.data.get(index)
+                    val item = getCurrentGalleryItem(imagesPagerAdapter)
                     shareImage(this, item.path)
                 }
 
@@ -120,11 +132,21 @@ class GalleryPagerActivity : AppCompatActivity() {
                 }
 
                 R.id.delete -> {
+                    val item = getCurrentGalleryItem(imagesPagerAdapter)
+                    filesManager.deleteLocal(item.path)
+                    model.showAllLocalFiles(this)
+
 //                    val fileIdToDelete = model.localFilesLiveData.value
 //                    filesManager.deleteLocal(path)
                 }
             }
         }
+    }
+
+    private fun getCurrentGalleryItem(imagesPagerAdapter: GalleryPagerAdapter): GalleryItem {
+        val index = image_pager.currentItem
+        val item = imagesPagerAdapter.data.get(index)
+        return item
     }
 
     private fun upload(filesManager: FilesManager, path: String) {

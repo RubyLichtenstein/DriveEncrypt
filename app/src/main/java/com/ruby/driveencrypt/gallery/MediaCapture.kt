@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
 import androidx.core.content.FileProvider
+import com.ruby.driveencrypt.share.getUriForFile
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -22,7 +23,7 @@ class MediaCapture {
     private fun createImageFile(activity: Activity): File {
         // Create an image file name
         val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-        val storageDir: File = activity.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        val storageDir: File = activity.getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
 
         return File.createTempFile(
             "JPEG_${timeStamp}_", /* prefix */
@@ -57,11 +58,7 @@ class MediaCapture {
 //                }
                 // Continue only if the File was successfully created
                 createImageFile(activity).also {
-                    val photoURI: Uri = FileProvider.getUriForFile(
-                        activity,
-                        "com.ruby.driveencrypt.fileprovider",
-                        it
-                    )
+                    val photoURI: Uri = getUriForFile(activity, it)!! // todo
                     takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
                     activity.startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO)
                 }

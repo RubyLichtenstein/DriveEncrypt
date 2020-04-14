@@ -53,22 +53,4 @@ class MediaStorePicker {
             onPicturePath(paths)
         }
     }
-
-    fun pathFromUri(
-        contentResolver: ContentResolver,
-        uri: Uri,
-        filePathColumn: Array<String>
-    ): String? {
-        val cursor: Cursor? = contentResolver
-            .query(uri, filePathColumn, null, null, null)
-        // Move to first row
-        if (cursor != null) {
-            cursor.moveToFirst()
-            val columnIndex = cursor.getColumnIndex(filePathColumn[0])
-            val path = cursor.getString(columnIndex)
-            cursor.close()
-            return path
-        }
-        return null
-    }
 }

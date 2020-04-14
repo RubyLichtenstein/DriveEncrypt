@@ -1,10 +1,15 @@
 package com.ruby.driveencrypt.gallery
 
+import android.content.Context
+import android.net.Uri
 import android.view.View
 import androidx.recyclerview.selection.ItemDetailsLookup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.ruby.driveencrypt.files.LocalFilesManager
 import com.ruby.driveencrypt.gallery.grid.GalleryGridDiffUtilCallback
+import com.ruby.driveencrypt.gallery.pager.isVideoFile
+import java.io.File
 
 
 abstract class BaseGalleryAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -38,7 +43,9 @@ abstract class BaseGalleryAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     fun addAll(newList: List<String>) {
-        val newItems = newList.map { GalleryItem(it) }
+        val newItems = newList
+            .filterNot { it.contains("thumbnail_") } // todo ugly
+            .map { GalleryItem(it) }
 
         val diffResult = DiffUtil.calculateDiff(
             GalleryGridDiffUtilCallback(
@@ -46,9 +53,23 @@ abstract class BaseGalleryAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder
                 oldItems = this.data
             )
         )
+
         this.data.clear()
         this.data.addAll(newItems)
         diffResult.dispatchUpdatesTo(this)
     }
+
+    fun getUri(
+        context: Context,
+        path: String
+    ): Uri {
+        return if (isVideoFile(path)) {
+            val file = File(path)
+            Uri.fromFile(File(LocalFilesManager.tnPath(context, file)))
+        } else {
+            Uri.fromFile(File(path))
+        }
+    }
+
 }
 

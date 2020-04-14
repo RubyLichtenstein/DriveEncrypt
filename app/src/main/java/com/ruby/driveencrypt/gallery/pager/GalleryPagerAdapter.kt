@@ -19,8 +19,6 @@ import java.io.File
 
 fun isVideoFile(path: String): Boolean {
     return MediaUtils.isVideo(MediaUtils.extractMime(path))
-//    val mimeType = getMimeType(path) ?: throw Exception("mime type in null, path: $path")
-//    return mimeType.startsWith("video")
 }
 
 class GalleryPagerAdapter : BaseGalleryAdapter() {
@@ -49,14 +47,26 @@ class GalleryPagerAdapter : BaseGalleryAdapter() {
         position: Int
     ) {
         val galleryItem = data[position]
-        val uri = Uri.fromFile(File(galleryItem.path))
+        val path = galleryItem.path
+
+        if (isVideoFile(path)) {
+            val uri = Uri.fromFile(File(path))
+            holder.itemView.video_play_btn.visibility = View.VISIBLE
+            holder.itemView.video_play_btn.setOnClickListener {
+                onTapVideo?.invoke(it, uri)
+            }
+        } else {
+            holder.itemView.video_play_btn.visibility = View.GONE
+        }
+
+        val imageUri = getUri(holder.itemView.context, path)
 
         when (holder) {
             is ImageViewHolder -> {
-                bindImage(holder, uri, galleryItem, false)
+                bindImage(holder, imageUri, galleryItem, false)
             }
             is VideoViewHolder -> {
-                bindImage(holder, uri, galleryItem, true)
+                bindImage(holder, imageUri, galleryItem, true)
             }
         }
     }
@@ -67,14 +77,6 @@ class GalleryPagerAdapter : BaseGalleryAdapter() {
         galleryItem: GalleryItem,
         isVideo: Boolean
     ) {
-        if (isVideo) {
-            holder.itemView.video_play_btn.visibility = View.VISIBLE
-            holder.itemView.video_play_btn.setOnClickListener {
-                onTapVideo?.invoke(it, uri)
-            }
-        } else {
-            holder.itemView.video_play_btn.visibility = View.GONE
-        }
 
         val mPhotoDraweeView = holder.itemView.page_image
         val controller = Fresco.newDraweeControllerBuilder()
@@ -99,30 +101,6 @@ class GalleryPagerAdapter : BaseGalleryAdapter() {
             onTap?.invoke(view, galleryItem)
         }
     }
-
-//    var player: SimpleExoPlayer? = null
-//    private fun bindVideo(
-//        holder: RecyclerView.ViewHolder,
-//        uri: Uri,
-//        galleryItem: GalleryItem
-//    ) {
-//        val playerView = holder.itemView.page_image
-//        val context = holder.itemView.context
-//        player = SimpleExoPlayer.Builder(context).build()
-//        playerView.setPlayer(player)
-//        playerView.setOnClickListener {
-//            onTapVideo?.invoke(it, uri)
-//        }
-//
-//        val dataSourceFactory: DataSource.Factory = DefaultDataSourceFactory(
-//            context,
-//            Util.getUserAgent(context, "yourApplicationName")
-//        )
-//
-//        val videoSource: MediaSource = ProgressiveMediaSource.Factory(dataSourceFactory)
-//            .createMediaSource(uri)
-//        player?.prepare(videoSource)
-//    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val layoutRes = when (viewType) {
