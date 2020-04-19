@@ -100,7 +100,7 @@ class GalleryPagerActivity : AppCompatActivity() {
         model.showAllLocalFiles(this)
         model.localFilesLiveData.observe(this, Observer {
             imagesPagerAdapter.addAll(it)
-            val index = it.indexOf(path)
+            val index = it.indexOfFirst { it.path == path }
             image_pager.setCurrentItem(index, false)
         })
     }

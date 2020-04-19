@@ -32,20 +32,10 @@ abstract class BaseGalleryAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder
 
     override fun getItemCount() = data.size
 
-    fun add(path: String) {
-        data.add(GalleryItem(path))
-        notifyItemInserted(data.size)
-    }
-
-    fun clear() {
-        data.clear()
-        notifyDataSetChanged()
-    }
-
-    fun addAll(newList: List<String>) {
+    fun addAll(newList: List<GalleryItem>) {
         val newItems = newList
-            .filterNot { it.contains("thumbnail_") } // todo ugly
-            .map { GalleryItem(it) }
+//            .filterNot { it.contains("thumbnail_") } // todo ugly
+//            .map { GalleryItem(it) }
 
         val diffResult = DiffUtil.calculateDiff(
             GalleryGridDiffUtilCallback(

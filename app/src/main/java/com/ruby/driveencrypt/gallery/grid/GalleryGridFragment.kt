@@ -50,10 +50,6 @@ class GalleryGridFragment : Fragment() {
 
             viewGridAdapter.addAll(it)
         })
-        model.fileAddedLiveData.observe(this, Observer {
-            empty_state.visibility = View.GONE
-            model.showAllLocalFiles(requireActivity())
-        })
     }
 
     override fun onCreateView(

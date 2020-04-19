@@ -1,8 +1,5 @@
 package com.ruby.driveencrypt.gallery.grid
 
-import android.animation.ValueAnimator
-import android.content.Context
-import android.media.ThumbnailUtils
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -13,15 +10,14 @@ import androidx.recyclerview.selection.ItemDetailsLookup
 import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.widget.RecyclerView
 import com.facebook.imagepipeline.common.ResizeOptions
-import com.facebook.imagepipeline.request.ImageRequestBuilder
 import com.ruby.driveencrypt.R
+import com.ruby.driveencrypt.files.FilesManager
 import com.ruby.driveencrypt.files.LocalFilesManager
 import com.ruby.driveencrypt.gallery.BaseGalleryAdapter
 import com.ruby.driveencrypt.gallery.pager.isVideoFile
 import com.ruby.driveencrypt.utils.displayMetrics
-import com.ruby.driveencrypt.utils.setMargins
 import com.squareup.picasso.Picasso
-import kotlinx.android.synthetic.main.gallery_list_item.view.*
+import kotlinx.android.synthetic.main.gallery_grid_list_item.view.*
 import java.io.File
 
 val GRID_ITEMS = 3
@@ -40,7 +36,7 @@ class GalleryGridAdapter : BaseGalleryAdapter() {
     ): ImageViewHolder {
         val rootView = LayoutInflater.from(parent.context)
             .inflate(
-                R.layout.gallery_list_item,
+                R.layout.gallery_grid_list_item,
                 parent,
                 false
             )
@@ -80,6 +76,28 @@ class GalleryGridAdapter : BaseGalleryAdapter() {
 
         galleryImage.setOnClickListener {
             onClick?.invoke(it, galleryItem)
+        }
+
+        val synced = galleryItem.synced === FilesManager.SyncStatus.Synced
+        holder.itemView.grid_item_sync_status.visibility = if (synced)
+            View.VISIBLE else View.GONE
+
+        when (galleryItem.synced) {
+            FilesManager.SyncStatus.Synced -> {
+                holder.itemView.grid_item_sync_status.setImageResource(
+                    R.drawable.ic_cloud_done_black_24dp
+                )
+            }
+            FilesManager.SyncStatus.Remote -> {
+
+            }
+            FilesManager.SyncStatus.Local -> {
+                holder.itemView.grid_item_sync_status.setImageResource(
+                    R.drawable.ic_cloud_off_black_24dp
+                )
+            }
+            null -> {
+            }
         }
 
         tracker?.let {

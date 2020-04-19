@@ -27,4 +27,9 @@
         <!-- Support library compatibility -->
         <item name="windowActionBarOverlay">true</item>
     </style>
+
+    <style name="MainFabsText">
+        <item name="android:textSize">22sp</item>
+        <item name="android:layout_marginEnd">8dp</item>
+    </style>
 </resources>

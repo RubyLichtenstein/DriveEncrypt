@@ -7,17 +7,57 @@ import com.google.android.gms.tasks.Tasks
 import com.ruby.driveencrypt.drive.log
 import com.ruby.driveencrypt.files.FilesManager
 import com.ruby.driveencrypt.files.LocalFilesManager
+import java.io.File
 
 class GalleryViewModel : ViewModel() {
-    val localFilesLiveData = MutableLiveData<List<String>>()
-    val fileAddedLiveData = MutableLiveData<Unit>()
+    val localFilesLiveData = MutableLiveData<List<GalleryItem>>()
     val refreshLiveData = MutableLiveData<Boolean>()
     val isInSelectionModeLiveData = MutableLiveData<Boolean>()
 
     fun showAllLocalFiles(context: Context) {
-        val localFilesPaths = LocalFilesManager.getLocalFilesPaths(context).sorted()
+        val localFilesPaths = LocalFilesManager
+            .getLocalFilesPaths(context)
+            .map { GalleryItem(it) }
+
         localFilesLiveData.value = localFilesPaths
     }
+
+    fun refreshSyncedStatusAndEmit(
+        filesManager: FilesManager
+    ) {
+        refreshSyncedStatus(filesManager)
+            .addOnSuccessListener {
+                if (it != null) {
+                    localFilesLiveData.value = it
+                }
+            }
+    }
+
+    private fun refreshSyncedStatus(
+        filesManager: FilesManager
+    ) = filesManager
+        .filesSyncStatus()
+        .onSuccessTask { syncStatus ->
+            val localFiles = localFilesLiveData.value
+            Tasks.call {
+                localFiles?.map { path ->
+                    galleryItemWithSyncStatus(path, syncStatus)
+                }
+            }
+        }
+
+    private fun galleryItemWithSyncStatus(
+        galleryItem: GalleryItem,
+        syncStatus: Set<FilesManager.FileSyncStatus>?
+    ): GalleryItem {
+        val fileName = File(galleryItem.path).name
+        val status = syncStatus
+            ?.find { it.fileName == fileName }
+            ?.syncStatus
+
+        return galleryItem.copy(synced = status)
+    }
+
 
     fun refreshFiles(
         filesManager: FilesManager,
@@ -57,7 +97,7 @@ class GalleryViewModel : ViewModel() {
 
         Tasks.whenAllComplete(tasks)
             .addOnCompleteListener {
-                fileAddedLiveData.value = Unit
+                showAllLocalFiles(context)
             }
 
 //        deleteFile(file)

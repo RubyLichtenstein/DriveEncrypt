@@ -3,38 +3,36 @@ package com.ruby.driveencrypt
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
-import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
 import android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import com.facebook.common.util.UriUtil
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.ruby.driveencrypt.drive.log
 import com.ruby.driveencrypt.files.FilesManager
 import com.ruby.driveencrypt.gallery.*
 import com.ruby.driveencrypt.gallery.grid.GalleryGridFragment
 import com.ruby.driveencrypt.lockscreen.LockScreenSettingsActivity
 import com.ruby.driveencrypt.signin.GoogleSignInHelper
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.main_fabs.*
 import pub.devrel.easypermissions.EasyPermissions
-import java.io.File
-import java.io.IOException
-import java.text.SimpleDateFormat
-import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
     private val imageGalleryHelper = MediaStorePicker()
-    lateinit var filesManager: FilesManager
+    private lateinit var filesManager: FilesManager
     private lateinit var googleSignInHelper: GoogleSignInHelper
-    var isFabsMenuVisable = false
+    private var isFabMenuVisable = false
     private val model: GalleryViewModel by viewModels()
 
     private val mediaCapture = MediaCapture()
@@ -44,6 +42,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         window.addFlags(FLAG_TRANSLUCENT_STATUS or FLAG_TRANSLUCENT_NAVIGATION)
         setSupportActionBar(grid_toolbar)
+
         checkStoragePermission()
 
         supportFragmentManager
@@ -57,14 +56,25 @@ class MainActivity : AppCompatActivity() {
         googleSignInHelper = GoogleSignInHelper(this)
 
         filesManager = FilesManager.create(this)
+        filesManager.initFolderId(this)
 
         fab_menu.setOnClickListener {
             imageGalleryHelper.selectImages(this)
         }
 
         fab_menu.setOnClickListener {
-            isFabsMenuVisable = !isFabsMenuVisable
-            fabs_menu.visibility = if (isFabsMenuVisable) View.GONE else View.VISIBLE
+            handleFabMenuClick()
+        }
+
+        fun animateAlpha(view: View, value: Float) {
+            view
+                .animate()
+                .alpha(value)
+                .setDuration(200)
+                .withEndAction {
+                    view.alpha = value
+                }
+                .start()
         }
 
         fab_import_videos.setOnClickListener {
@@ -95,6 +105,22 @@ class MainActivity : AppCompatActivity() {
             UserDialog()
                 .show(supportFragmentManager, "")
         }
+    }
+
+    private fun handleFabMenuClick() {
+        if (isFabMenuVisable) {
+            grid_toolbar.visibility = View.VISIBLE
+
+            main_background.visibility = View.GONE
+            fabs_menu.visibility = View.GONE
+        } else {
+            grid_toolbar.visibility = View.GONE
+
+            main_background.visibility = View.VISIBLE
+            fabs_menu.visibility = View.VISIBLE
+        }
+
+        isFabMenuVisable = !isFabMenuVisable
     }
 
     private fun checkStoragePermission() {
@@ -129,6 +155,56 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
             return true
         }
+
+        if (id == R.id.upload_drive) {
+            filesManager
+                .uploadNotSyncFiles()
+                .addOnSuccessListener {
+                    it.onEach {
+                        it?.log(
+                            "TAG",
+                            "uploadNotSyncFiles"
+                        )?.addOnSuccessListener {
+                            Toast.makeText(
+                                this,
+                                "uploaded: " + it.name,
+                                Toast.LENGTH_LONG
+                            ).show()
+                            Log.d("TAG", it.toString())
+                        }
+                    }
+                }
+            return true
+        }
+
+        if (id == R.id.download_drive) {
+            filesManager
+                .downloadNotSyncFiles()
+                .addOnSuccessListener {
+                    it.onEach {
+                        it.addOnSuccessListener {
+                            model.showAllLocalFiles(this)
+//                            Log.d("TAG", it.toString())
+                        }
+                    }
+                }
+            return true
+        }
+
+        // todo show only if drive active
+        if (id == R.id.sync_with_drive) {
+            model.refreshSyncedStatusAndEmit(filesManager)
+//            filesManager
+//                .filesSyncStatus()
+//                .addOnSuccessListener {
+//                    Log.d("TAG", it.toString())
+//
+////                    Toast
+////                        .makeText(this, it.toString(), Toast.LENGTH_LONG)
+////                        .show()
+//                }
+            return true
+        }
         return super.onOptionsItemSelected(item)
     }
 
@@ -137,14 +213,17 @@ class MainActivity : AppCompatActivity() {
 
         if (resultCode == Activity.RESULT_CANCELED) return
 
+        if (isFabMenuVisable) {
+            handleFabMenuClick()
+        }
+
         if (requestCode == googleSignInHelper.RC_SIGN_IN) {
             // The Task returned from this call is always completed, no need to attach
             // a listener.
             val task =
                 GoogleSignIn.getSignedInAccountFromIntent(intent)
-            googleSignInHelper.handleSignInResult(task)
+            googleSignInHelper.handleSignInResult(this, task)
         }
-
 
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {
@@ -168,18 +247,13 @@ class MainActivity : AppCompatActivity() {
                 model.handleImagePath(this, listOf(path!!))
             }
         }
-
     }
 
-    private fun deleteFile(file: File) {
-        val delete = file.delete()
-        MediaScannerConnection.scanFile(
-            this,
-            arrayOf(Environment.getExternalStorageDirectory().toString()),
-            null
-        ) { path, uri ->
-            //            Log.i("ExternalStorage", "Scanned $path:")
-            //            Log.i("ExternalStorage", "-> uri=$uri")
+    override fun onBackPressed() {
+        if (isFabMenuVisable) {
+            handleFabMenuClick()
+        } else {
+            super.onBackPressed()
         }
     }
 

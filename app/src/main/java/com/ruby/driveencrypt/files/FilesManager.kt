@@ -38,6 +38,19 @@ class FilesManager(
                 )
             }
 
+    fun uploadNotSyncFiles() =
+        filesSyncStatus()
+            .onSuccessTask {
+                Tasks.forResult(
+                    it.orEmpty()
+                        .filter { it.syncStatus == SyncStatus.Local }
+                        .map {
+                            val path = context.filesDir.path + "/" + it.fileName
+                            uploadFile(path)
+                        }
+                )
+            }
+
     fun uploadFile(path: String): Task<com.google.api.services.drive.model.File>? {
         val file = File(path)
         val fileName = file.name
@@ -70,7 +83,7 @@ class FilesManager(
         val fileId: String? = null
     )
 
-    private fun filesSyncStatus(): Task<Set<FileSyncStatus>> {
+    fun filesSyncStatus(): Task<Set<FileSyncStatus>> {
         return driveService
             .allImages()
             .onSuccessTask {

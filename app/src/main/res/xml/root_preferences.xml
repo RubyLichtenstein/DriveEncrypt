@@ -1,11 +1,11 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <PreferenceCategory app:title="@string/messages_header">
+    <PreferenceCategory app:title="Lock Screen">
         <Preference
+            android:icon="@drawable/ic_screen_lock_portrait_black_24dp"
             android:key="edit_password"
-            android:summary="This is a cool button"
-            android:title="Acts like a button" />
+            android:title="Change Password" />
         <!--        <EditTextPreference-->
         <!--            app:key="signature"-->
         <!--            app:title="@string/signature_title"-->

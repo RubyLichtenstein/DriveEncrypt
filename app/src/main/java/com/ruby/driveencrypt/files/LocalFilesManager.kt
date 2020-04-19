@@ -18,6 +18,7 @@ object LocalFilesManager {
     private val mExecutor: Executor =
         Executors.newCachedThreadPool()
 
+    private const val THUMBNAIL_PREFIX = "thumbnail_"
     const val DIR_VIDEO = "video"
     const val DIR_IMAGE = "image"
     const val DIR_THUMBNAIL = "thumbnail"
@@ -39,13 +40,18 @@ object LocalFilesManager {
             file.name
         )
 
+
     fun getLocalFilesPaths(context: Context) =
         filesDirListFiles(context)
             .map { it.path }
+            .filterNot { it.contains(THUMBNAIL_PREFIX) }
+            .sorted()
 
     fun getLocalFilesNames(context: Context) =
         filesDirListFiles(context)
             .map { it.name }
+            .filterNot { it.contains(THUMBNAIL_PREFIX) }
+            .sorted()
 
     fun thumbnailFileName(originalName: String) =
         "thumbnail_${originalName.substringBefore(".")}.PNG"
@@ -150,9 +156,7 @@ object LocalFilesManager {
             .forEach { it.delete() }
     }
 
-    private fun filesDirListFiles(context: Context): Array<out File> {
-        return context
-            .filesDir
-            .listFiles()
-    }
+    private fun filesDirListFiles(context: Context): Array<out File> = context
+        .filesDir
+        .listFiles()
 }

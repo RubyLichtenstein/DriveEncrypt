@@ -30,6 +30,7 @@ class UserDialog : DialogFragment() {
 
                 view.logout.setOnClickListener {
                     googleSignInHelper.signOut()
+                    dismiss()
                 }
             } else {
                 view.logout.visibility = View.GONE
@@ -38,6 +39,7 @@ class UserDialog : DialogFragment() {
                 view.googleSignInButton.visibility = View.VISIBLE
                 view.googleSignInButton.setOnClickListener {
                     googleSignInHelper.signIn()
+                    dismiss()
                 }
             }
 
