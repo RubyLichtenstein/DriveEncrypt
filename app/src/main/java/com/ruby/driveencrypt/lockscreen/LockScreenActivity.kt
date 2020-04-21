@@ -23,7 +23,7 @@ class LockScreenActivity : AppCompatActivity() {
         editPassword = intent.getBooleanExtra(EDIT_PASSWORD, false)
 
         if (editPassword) {
-            showLockScreenFragment()
+            showLockScreenFragment("Please confirm your pin to continue.")
         } else {
             showLockScreenFragment()
         }
@@ -34,6 +34,7 @@ class LockScreenActivity : AppCompatActivity() {
             override fun onCodeCreated(encodedCode: String) {
                 Toast.makeText(this@LockScreenActivity, "Code created", Toast.LENGTH_SHORT).show()
                 if (editPassword) {
+                    // mode create
                     finish()
                 } else {
                     showMainActivity()
@@ -68,29 +69,35 @@ class LockScreenActivity : AppCompatActivity() {
         }
     }
 
-    private fun showLockScreenFragment() {
+    private fun showLockScreenFragment(message: String? = null) {
         val pinExist = pinPreferences.isPinExist(this)
-        showLockScreenFragment(pinExist)
+        showLockScreenFragment(pinExist, message)
     }
 
-    private fun showLockScreenFragment(isPinExist: Boolean) {
+    private fun showLockScreenFragment(
+        isPinExist: Boolean,
+        message: String? = null
+    ) {
         val builder = PFFLockScreenConfiguration.Builder(this)
-            .setTitle(if (isPinExist) "Unlock with your pin code or fingerprint" else "Create Code")
+            .setTitle(
+                if (isPinExist)
+                    message ?: "Unlock with your pin code or fingerprint"
+                else
+                    message ?: "Create Code"
+            )
             .setCodeLength(4)
-            .setLeftButton("Can't remeber")
             .setNewCodeValidation(true)
             .setNewCodeValidationTitle("Please input code again")
             .setUseFingerprint(true)
 
         val fragment = PFLockScreenFragment()
-//        fragment.setOnLeftButtonClickListener {
-//            Toast.makeText(
-//                this@MainActivity,
-//                "Left button pressed",
-//                Toast.LENGTH_LONG
-//            ).show()
-//        }
-        builder.setMode(if (isPinExist) PFFLockScreenConfiguration.MODE_AUTH else PFFLockScreenConfiguration.MODE_CREATE)
+
+        builder.setMode(
+            if (isPinExist)
+                PFFLockScreenConfiguration.MODE_AUTH
+            else
+                PFFLockScreenConfiguration.MODE_CREATE
+        )
 
         if (isPinExist) {
             fragment.setLoginListener(mLoginListener)
@@ -98,8 +105,11 @@ class LockScreenActivity : AppCompatActivity() {
 
         fragment.setConfiguration(builder.build())
         fragment.setCodeCreateListener(mCodeCreateListener)
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.container_view, fragment).commit()
+
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.container_view, fragment)
+            .commit()
     }
 
     private fun showMainActivity() {
