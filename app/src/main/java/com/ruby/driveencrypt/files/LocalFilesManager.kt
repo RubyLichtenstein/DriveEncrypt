@@ -3,10 +3,11 @@ package com.ruby.driveencrypt.files
 import android.content.Context
 import android.graphics.Bitmap
 import android.media.ThumbnailUtils
+import android.net.Uri
 import android.provider.MediaStore
+import com.facebook.common.media.MediaUtils
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
-import com.ruby.driveencrypt.gallery.pager.isVideoFile
 import java.io.File
 import java.io.FileInputStream
 import java.util.concurrent.Callable
@@ -40,6 +41,21 @@ object LocalFilesManager {
             file.name
         )
 
+    fun getUriIfVideoThumbnail(
+        context: Context,
+        path: String
+    ): Uri {
+        return if (isVideoFile(path)) {
+            val file = File(path)
+            Uri.fromFile(File(LocalFilesManager.tnPath(context, file)))
+        } else {
+            Uri.fromFile(File(path))
+        }
+    }
+
+    fun isVideoFile(path: String): Boolean {
+        return MediaUtils.isVideo(MediaUtils.extractMime(path))
+    }
 
     fun getLocalFilesPaths(context: Context) =
         filesDirListFiles(context)

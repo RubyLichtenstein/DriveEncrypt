@@ -2,20 +2,18 @@ package com.ruby.driveencrypt.gallery.grid
 
 import android.net.Uri
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import androidx.recyclerview.selection.ItemDetailsLookup
 import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.widget.RecyclerView
-import com.facebook.imagepipeline.common.ResizeOptions
 import com.ruby.driveencrypt.R
 import com.ruby.driveencrypt.files.FilesManager
 import com.ruby.driveencrypt.files.LocalFilesManager
 import com.ruby.driveencrypt.gallery.BaseGalleryAdapter
-import com.ruby.driveencrypt.gallery.pager.isVideoFile
+import com.ruby.driveencrypt.utils.animateScale
 import com.ruby.driveencrypt.utils.displayMetrics
+import com.ruby.driveencrypt.utils.gone
+import com.ruby.driveencrypt.utils.visible
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.gallery_grid_list_item.view.*
 import java.io.File
@@ -23,7 +21,6 @@ import java.io.File
 val GRID_ITEMS = 3
 
 class GalleryGridAdapter : BaseGalleryAdapter() {
-    var mResizeOptions: ResizeOptions? = null
     var tracker: SelectionTracker<Long>? = null
 
     init {
@@ -46,13 +43,12 @@ class GalleryGridAdapter : BaseGalleryAdapter() {
         return ImageViewHolder(rootView)
     }
 
-
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val galleryItem = data[position]
         val path = galleryItem.path
         val context = holder.itemView.context
 
-        val uri = if (isVideoFile(path)) {
+        val uri = if (LocalFilesManager.isVideoFile(path)) {
             holder.itemView.grid_item_video_play.visibility = View.VISIBLE
             val file = File(path)
             Uri.fromFile(File(LocalFilesManager.tnPath(context, file)))
@@ -78,30 +74,24 @@ class GalleryGridAdapter : BaseGalleryAdapter() {
             onClick?.invoke(it, galleryItem)
         }
 
-        val synced = galleryItem.synced === FilesManager.SyncStatus.Synced
-        holder.itemView.grid_item_sync_status.visibility = if (synced)
-            View.VISIBLE else View.GONE
+        val icon = when (galleryItem.synced) {
+            FilesManager.SyncStatus.Synced -> R.drawable.ic_cloud_done_black_24dp
+            FilesManager.SyncStatus.Local -> R.drawable.ic_cloud_off_black_24dp
+            FilesManager.SyncStatus.Remote -> null
+            null -> null
+        }
 
-        when (galleryItem.synced) {
-            FilesManager.SyncStatus.Synced -> {
-                holder.itemView.grid_item_sync_status.setImageResource(
-                    R.drawable.ic_cloud_done_black_24dp
-                )
-            }
-            FilesManager.SyncStatus.Remote -> {
-
-            }
-            FilesManager.SyncStatus.Local -> {
-                holder.itemView.grid_item_sync_status.setImageResource(
-                    R.drawable.ic_cloud_off_black_24dp
-                )
-            }
-            null -> {
+        with(holder.itemView.grid_item_sync_status) {
+            if (icon != null) {
+                visible()
+                setImageResource(icon)
+            } else {
+                gone()
             }
         }
 
         tracker?.let {
-            val selected = it.isSelected(galleryItem.hashCode().toLong())
+            val selected = it.isSelected(getItemId(position))
             if (selected) {
                 holder.itemView.grid_item_check.visibility = View.VISIBLE
                 animateScale(galleryImage, 0.8F)
@@ -112,31 +102,11 @@ class GalleryGridAdapter : BaseGalleryAdapter() {
         }
     }
 
-    private fun animateScale(galleryImage: ImageView, scale: Float) {
-        galleryImage
-            .animate()
-            .scaleX(scale)
-            .scaleY(scale)
-            .setDuration(200)
-            .withEndAction {
-                galleryImage.scaleX = scale
-                galleryImage.scaleY = scale
-            }
-            .start()
-    }
+    override fun getItemId(position: Int): Long = data[position].key()
 
-    override fun getItemId(position: Int): Long = data[position].hashCode().toLong()
-}
-
-class MyItemDetailsLookup(private val recyclerView: RecyclerView) :
-    ItemDetailsLookup<Long>() {
-    override fun getItemDetails(event: MotionEvent): ItemDetails<Long>? {
-        val view = recyclerView.findChildViewUnder(event.x, event.y)
-        if (view != null) {
-            return (recyclerView.getChildViewHolder(view) as BaseGalleryAdapter.ImageViewHolder)
-                .getItemDetails()
+    fun getSelectedItems() = tracker
+        ?.selection
+        ?.mapNotNull { selected ->
+            data.find { it.key() == selected }
         }
-        return null
-    }
-
 }

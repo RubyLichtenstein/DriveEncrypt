@@ -17,6 +17,18 @@ fun Context.displayMetrics(): DisplayMetrics {
 
 fun View.window() = (context as Activity).window
 
+fun View.gone() {
+    visibility = View.GONE
+}
+
+fun View.visible() {
+    visibility = View.VISIBLE
+}
+
+fun View.invisible() {
+    visibility = View.INVISIBLE
+}
+
 fun View.setMargins(all: Int) = setMargins(all, all, all, all)
 fun View.setMargins(l: Int, t: Int, r: Int, b: Int) {
     if (layoutParams is ViewGroup.MarginLayoutParams) {

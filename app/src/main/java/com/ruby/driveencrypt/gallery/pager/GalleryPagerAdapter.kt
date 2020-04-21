@@ -11,35 +11,24 @@ import com.facebook.drawee.backends.pipeline.Fresco
 import com.facebook.drawee.controller.BaseControllerListener
 import com.facebook.imagepipeline.image.ImageInfo
 import com.ruby.driveencrypt.R
+import com.ruby.driveencrypt.files.LocalFilesManager
 import com.ruby.driveencrypt.gallery.BaseGalleryAdapter
 import com.ruby.driveencrypt.gallery.GalleryItem
 import com.ruby.driveencrypt.utils.getMimeType
 import kotlinx.android.synthetic.main.pager_image_list_item.view.*
 import java.io.File
 
-fun isVideoFile(path: String): Boolean {
-    return MediaUtils.isVideo(MediaUtils.extractMime(path))
-}
-
 class GalleryPagerAdapter : BaseGalleryAdapter() {
 
     companion object {
         const val VIEW_TYPE_IMAGE: Int = 0
-        const val VIEW_TYPE_VIDEO: Int = 1
     }
 
     var onTap: ((View, GalleryItem) -> Unit)? = null
     var onTapVideo: ((View, Uri) -> Unit)? = null
 
     override fun getItemViewType(position: Int): Int {
-        val path = data[position].path
-        val mimeType = getMimeType(path) ?: throw Exception("mime type in null, path: $path")
-
-        return when {
-            mimeType.startsWith("image") -> VIEW_TYPE_IMAGE
-            isVideoFile(path) -> VIEW_TYPE_VIDEO
-            else -> throw Exception("mime type not supported, path: $path")
-        }
+        return VIEW_TYPE_IMAGE
     }
 
     override fun onBindViewHolder(
@@ -49,7 +38,7 @@ class GalleryPagerAdapter : BaseGalleryAdapter() {
         val galleryItem = data[position]
         val path = galleryItem.path
 
-        if (isVideoFile(path)) {
+        if (LocalFilesManager.isVideoFile(path)) {
             val uri = Uri.fromFile(File(path))
             holder.itemView.video_play_btn.visibility = View.VISIBLE
             holder.itemView.video_play_btn.setOnClickListener {
@@ -59,25 +48,15 @@ class GalleryPagerAdapter : BaseGalleryAdapter() {
             holder.itemView.video_play_btn.visibility = View.GONE
         }
 
-        val imageUri = getUri(holder.itemView.context, path)
-
-        when (holder) {
-            is ImageViewHolder -> {
-                bindImage(holder, imageUri, galleryItem, false)
-            }
-            is VideoViewHolder -> {
-                bindImage(holder, imageUri, galleryItem, true)
-            }
-        }
+        val imageUri = LocalFilesManager.getUriIfVideoThumbnail(holder.itemView.context, path)
+        bindImage(holder, imageUri, galleryItem)
     }
 
     private fun bindImage(
         holder: RecyclerView.ViewHolder,
         uri: Uri,
-        galleryItem: GalleryItem,
-        isVideo: Boolean
+        galleryItem: GalleryItem
     ) {
-
         val mPhotoDraweeView = holder.itemView.page_image
         val controller = Fresco.newDraweeControllerBuilder()
         controller.setUri(uri)
@@ -96,30 +75,19 @@ class GalleryPagerAdapter : BaseGalleryAdapter() {
             }
         }
         mPhotoDraweeView.setController(controller.build())
-
         mPhotoDraweeView.setOnPhotoTapListener { view, x, y ->
             onTap?.invoke(view, galleryItem)
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        val layoutRes = when (viewType) {
-            VIEW_TYPE_IMAGE -> R.layout.pager_image_list_item
-            VIEW_TYPE_VIDEO -> R.layout.pager_image_list_item
-            else -> throw Exception("viewType not supported viewType: $viewType")
-        }
-
         val rootView = LayoutInflater.from(parent.context)
             .inflate(
-                layoutRes,
+                R.layout.pager_image_list_item,
                 parent,
                 false
             )
 
-        return when (viewType) {
-            VIEW_TYPE_IMAGE -> ImageViewHolder(rootView)
-            VIEW_TYPE_VIDEO -> VideoViewHolder(rootView)
-            else -> throw Exception("viewType not supported viewType: $viewType")
-        }
+        return ImageViewHolder(rootView)
     }
 }

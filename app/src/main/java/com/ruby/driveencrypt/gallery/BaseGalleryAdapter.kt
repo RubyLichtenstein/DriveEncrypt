@@ -1,15 +1,10 @@
 package com.ruby.driveencrypt.gallery
 
-import android.content.Context
-import android.net.Uri
 import android.view.View
 import androidx.recyclerview.selection.ItemDetailsLookup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.ruby.driveencrypt.files.LocalFilesManager
 import com.ruby.driveencrypt.gallery.grid.GalleryGridDiffUtilCallback
-import com.ruby.driveencrypt.gallery.pager.isVideoFile
-import java.io.File
 
 
 abstract class BaseGalleryAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -26,40 +21,19 @@ abstract class BaseGalleryAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder
             }
     }
 
-    inner class VideoViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-
-    }
-
     override fun getItemCount() = data.size
 
     fun addAll(newList: List<GalleryItem>) {
-        val newItems = newList
-//            .filterNot { it.contains("thumbnail_") } // todo ugly
-//            .map { GalleryItem(it) }
-
         val diffResult = DiffUtil.calculateDiff(
             GalleryGridDiffUtilCallback(
-                newItems = newItems,
+                newItems = newList,
                 oldItems = this.data
             )
         )
 
         this.data.clear()
-        this.data.addAll(newItems)
+        this.data.addAll(newList)
         diffResult.dispatchUpdatesTo(this)
     }
-
-    fun getUri(
-        context: Context,
-        path: String
-    ): Uri {
-        return if (isVideoFile(path)) {
-            val file = File(path)
-            Uri.fromFile(File(LocalFilesManager.tnPath(context, file)))
-        } else {
-            Uri.fromFile(File(path))
-        }
-    }
-
 }
 

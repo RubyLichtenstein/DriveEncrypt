@@ -13,15 +13,14 @@ import androidx.recyclerview.selection.StableIdKeyProvider
 import androidx.recyclerview.selection.StorageStrategy
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.facebook.imagepipeline.common.ResizeOptions
 
 import com.ruby.driveencrypt.R
 import com.ruby.driveencrypt.files.FilesManager
-import com.ruby.driveencrypt.gallery.GalleryItem
 import com.ruby.driveencrypt.gallery.GalleryViewModel
+import com.ruby.driveencrypt.gallery.grid.selection.MyItemDetailsLookup
+import com.ruby.driveencrypt.gallery.grid.selection.MyItemKeyProvider
 import com.ruby.driveencrypt.gallery.pager.GalleryPagerActivity
 import com.ruby.driveencrypt.share.shareMultipleImage
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_gallery_grid.*
 
 class GalleryGridFragment : Fragment() {
@@ -29,8 +28,9 @@ class GalleryGridFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var viewGridAdapter: GalleryGridAdapter
     private val SPAN_COUNT = 3
-    private var mResizeOptions: ResizeOptions? = null
     lateinit var filesManager: FilesManager
+    lateinit var selectionTracker: SelectionTracker<Long>
+
     val model: GalleryViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,21 +75,14 @@ class GalleryGridFragment : Fragment() {
         val gridLayoutManager = GridLayoutManager(activity, SPAN_COUNT)
 
         recyclerView = my_recycler_view.apply {
-            setHasFixedSize(true)
             layoutManager = gridLayoutManager
             adapter = viewGridAdapter
         }
 
-        recyclerView.addOnLayoutChangeListener { view, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
-            val imageSize = (right - left) / SPAN_COUNT
-            mResizeOptions = ResizeOptions(imageSize, imageSize)
-            viewGridAdapter.mResizeOptions = mResizeOptions
-        }
-
-        val selectionTracker = SelectionTracker.Builder(
+        selectionTracker = SelectionTracker.Builder(
             "mySelection",
             recyclerView,
-            StableIdKeyProvider(recyclerView),
+            MyItemKeyProvider(viewGridAdapter),
             MyItemDetailsLookup(recyclerView),
             StorageStrategy.createLongStorage()
         ).withSelectionPredicate(
@@ -114,7 +107,7 @@ class GalleryGridFragment : Fragment() {
 
         viewGridAdapter.tracker = selectionTracker
         delete_selected.setOnClickListener {
-            getSelectedItems(selectionTracker).forEach {
+            viewGridAdapter.getSelectedItems()?.forEach {
                 filesManager.deleteLocal(it.path)
             }
 
@@ -123,7 +116,10 @@ class GalleryGridFragment : Fragment() {
         }
 
         share_selected.setOnClickListener {
-            val paths = getSelectedItems(selectionTracker).map { it.path }
+            val paths = viewGridAdapter.getSelectedItems()
+                .orEmpty()
+                .map { it.path }
+
             shareMultipleImage(requireContext(), paths)
         }
 
@@ -134,7 +130,10 @@ class GalleryGridFragment : Fragment() {
         select_all.setOnClickListener {
             val keys = viewGridAdapter
                 .data
-                .map { it.hashCode().toLong() }
+                .map {
+//                    Log.d("TAG", it.id().toString())
+                    it.key()
+                }
                 .asIterable()
 
             selectionTracker.setItemsSelected(
@@ -142,17 +141,5 @@ class GalleryGridFragment : Fragment() {
                 true
             )
         }
-    }
-
-
-    private fun getSelectedItems(selectionTracker: SelectionTracker<Long>): List<GalleryItem> {
-        val data = viewGridAdapter.data
-
-        return selectionTracker
-            .selection
-            .map { selected ->
-                val item = data.find { it.hashCode().toLong() == selected }!! // todo
-                item
-            }
     }
 }
