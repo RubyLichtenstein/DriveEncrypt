@@ -175,4 +175,6 @@ object LocalFilesManager {
     private fun filesDirListFiles(context: Context): Array<out File> = context
         .filesDir
         .listFiles()
+
+    fun deleteLocal(path: String) = File(path).delete()
 }

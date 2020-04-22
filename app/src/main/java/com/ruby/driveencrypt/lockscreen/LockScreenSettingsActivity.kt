@@ -29,7 +29,7 @@ class LockScreenSettingsActivity : AppCompatActivity() {
             super.onViewCreated(view, savedInstanceState)
             val button: Preference = findPreference("edit_password")!!
             button.setOnPreferenceClickListener {
-                LockScreenActivity.editPassword(activity!!)
+                LockScreenActivity.editPassword(requireActivity())
                 true
             }
         }

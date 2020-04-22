@@ -4,11 +4,13 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewAnimationUtils
 import android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
 import android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
 import android.widget.Toast
@@ -18,7 +20,7 @@ import androidx.lifecycle.Observer
 import com.facebook.common.util.UriUtil
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.ruby.driveencrypt.drive.log
-import com.ruby.driveencrypt.files.FilesManager
+import com.ruby.driveencrypt.files.RemoteFilesManager
 import com.ruby.driveencrypt.gallery.*
 import com.ruby.driveencrypt.gallery.grid.GalleryGridFragment
 import com.ruby.driveencrypt.lockscreen.LockScreenSettingsActivity
@@ -26,16 +28,45 @@ import com.ruby.driveencrypt.signin.GoogleSignInHelper
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.main_fabs.*
 import pub.devrel.easypermissions.EasyPermissions
+import kotlin.math.hypot
 
 class MainActivity : AppCompatActivity() {
 
     private val imageGalleryHelper = MediaStorePicker()
-    private lateinit var filesManager: FilesManager
+    private var remoteFilesManager: RemoteFilesManager? = null
     private lateinit var googleSignInHelper: GoogleSignInHelper
     private var isFabMenuVisable = false
     private val model: GalleryViewModel by viewModels()
 
     private val mediaCapture = MediaCapture()
+
+    fun createCircularReveal(
+        myView: View,
+        anchor: View
+    ) {
+        // previously invisible view
+        // get the center for the clipping circle
+        val anchorCx = anchor.x + (anchor.width / 2)
+        val anchorCy = anchor.y + (anchor.height / 2)
+
+        val cx = myView.width// / 2
+        val cy = myView.height// / 2
+
+        // get the final radius for the clipping circle
+        val finalRadius = hypot(cx.toDouble(), cy.toDouble()).toFloat()
+
+        // create the animator for this view (the start radius is zero)
+        val anim = ViewAnimationUtils.createCircularReveal(
+            myView,
+            anchorCx.toInt(),
+            anchorCy.toInt(),
+            0f,
+            finalRadius
+        )
+        // make the view visible and start the animation
+        myView.visibility = View.VISIBLE
+        anim.start()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,8 +86,8 @@ class MainActivity : AppCompatActivity() {
 
         googleSignInHelper = GoogleSignInHelper(this)
 
-        filesManager = FilesManager.create(this)
-        filesManager.initFolderId(this)
+        remoteFilesManager = RemoteFilesManager.create(this)
+        remoteFilesManager?.initFolderId(this)
 
         fab_menu.setOnClickListener {
             imageGalleryHelper.selectImages(this)
@@ -113,11 +144,13 @@ class MainActivity : AppCompatActivity() {
 
             main_background.visibility = View.GONE
             fabs_menu.visibility = View.GONE
+            fab_menu.setImageResource(R.drawable.ic_add_black_24dp)
         } else {
             grid_toolbar.visibility = View.GONE
 
-            main_background.visibility = View.VISIBLE
+            createCircularReveal(main_background, fab_menu)
             fabs_menu.visibility = View.VISIBLE
+            fab_menu.setImageResource(R.drawable.ic_clear_black_24dp)
         }
 
         isFabMenuVisable = !isFabMenuVisable
@@ -156,55 +189,45 @@ class MainActivity : AppCompatActivity() {
             return true
         }
 
-        if (id == R.id.upload_drive) {
-            filesManager
-                .uploadNotSyncFiles()
-                .addOnSuccessListener {
-                    it.onEach {
-                        it?.log(
-                            "TAG",
-                            "uploadNotSyncFiles"
-                        )?.addOnSuccessListener {
-                            Toast.makeText(
-                                this,
-                                "uploaded: " + it.name,
-                                Toast.LENGTH_LONG
-                            ).show()
-                            Log.d("TAG", it.toString())
+        val remoteFilesManager = remoteFilesManager
+        if (remoteFilesManager != null) {
+            if (id == R.id.upload_drive) {
+                remoteFilesManager
+                    .uploadNotSyncFiles()
+                    .addOnSuccessListener {
+                        it.onEach {
+                            it?.addOnSuccessListener {
+                                Toast.makeText(
+                                    this,
+                                    "uploaded: " + it.name,
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
                         }
                     }
-                }
-            return true
-        }
+                return true
+            }
 
-        if (id == R.id.download_drive) {
-            filesManager
-                .downloadNotSyncFiles()
-                .addOnSuccessListener {
-                    it.onEach {
-                        it.addOnSuccessListener {
-                            model.showAllLocalFiles(this)
-//                            Log.d("TAG", it.toString())
+            if (id == R.id.download_drive) {
+                remoteFilesManager
+                    .downloadNotSyncFiles()
+                    .addOnSuccessListener {
+                        it.onEach {
+                            it.addOnSuccessListener {
+                                model.showAllLocalFiles(this)
+                            }
                         }
                     }
-                }
-            return true
+                return true
+            }
+
+            // todo show only if drive active
+            if (id == R.id.sync_with_drive) {
+                model.refreshSyncedStatusAndEmit(remoteFilesManager)
+                return true
+            }
         }
 
-        // todo show only if drive active
-        if (id == R.id.sync_with_drive) {
-            model.refreshSyncedStatusAndEmit(filesManager)
-//            filesManager
-//                .filesSyncStatus()
-//                .addOnSuccessListener {
-//                    Log.d("TAG", it.toString())
-//
-////                    Toast
-////                        .makeText(this, it.toString(), Toast.LENGTH_LONG)
-////                        .show()
-//                }
-            return true
-        }
         return super.onOptionsItemSelected(item)
     }
 

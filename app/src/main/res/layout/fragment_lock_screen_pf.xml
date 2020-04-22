@@ -5,7 +5,7 @@
     android:id="@+id/fragment_pf"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/primaryColor">
+    android:background="?attr/colorPrimaryDark">
 
     <ImageView
         style="?pf_lock_screen"
@@ -134,15 +134,16 @@
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
-                <ImageButton
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_delete"
                     style="@style/PasswordImage"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_gravity="center"
-                    android:src="@drawable/ic_backspace_black_24dp">
-
-                </ImageButton>
+                    app:icon="@drawable/ic_backspace_black_24dp"
+                    app:iconGravity="textStart"
+                    app:iconPadding="0dp"
+                    app:iconTint="@android:color/white" />
             </FrameLayout>
 
             <Button
@@ -161,16 +162,17 @@
                 android:layout_weight="1"
                 android:background="?attr/selectableItemBackgroundBorderless">
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_next"
-                    style="@style/PasswordImage"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:gravity="center"
-                    android:text="next"
-                    android:textColor="@android:color/white"
-                    tools:visibility="gone" />
+                    style="@style/PasswordButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    app:icon="@drawable/ic_check_circle_black_24dp"
+                    app:iconGravity="textStart"
+                    app:iconPadding="0dp"
+                    app:iconTint="@android:color/white"
+                    tools:visibility="visible" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_finger_print"
@@ -180,9 +182,9 @@
                     android:layout_gravity="center"
                     app:icon="@drawable/ic_fingerprint_black_24dp"
                     app:iconGravity="textStart"
-                    app:iconPadding="0dp" />
+                    app:iconPadding="0dp"
+                    app:iconTint="@android:color/white" />
             </FrameLayout>
-
         </TableRow>
     </TableLayout>
 

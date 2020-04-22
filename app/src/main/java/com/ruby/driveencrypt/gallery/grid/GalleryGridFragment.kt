@@ -9,13 +9,13 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.selection.SelectionPredicates
 import androidx.recyclerview.selection.SelectionTracker
-import androidx.recyclerview.selection.StableIdKeyProvider
 import androidx.recyclerview.selection.StorageStrategy
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
 import com.ruby.driveencrypt.R
-import com.ruby.driveencrypt.files.FilesManager
+import com.ruby.driveencrypt.files.LocalFilesManager
+import com.ruby.driveencrypt.files.RemoteFilesManager
 import com.ruby.driveencrypt.gallery.GalleryViewModel
 import com.ruby.driveencrypt.gallery.grid.selection.MyItemDetailsLookup
 import com.ruby.driveencrypt.gallery.grid.selection.MyItemKeyProvider
@@ -28,14 +28,14 @@ class GalleryGridFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var viewGridAdapter: GalleryGridAdapter
     private val SPAN_COUNT = 3
-    lateinit var filesManager: FilesManager
+    var remoteFilesManager: RemoteFilesManager? = null
     lateinit var selectionTracker: SelectionTracker<Long>
 
     val model: GalleryViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        filesManager = FilesManager.create(requireActivity())
+        remoteFilesManager = RemoteFilesManager.create(requireActivity())
         setupViewModel(model)
     }
 
@@ -108,7 +108,7 @@ class GalleryGridFragment : Fragment() {
         viewGridAdapter.tracker = selectionTracker
         delete_selected.setOnClickListener {
             viewGridAdapter.getSelectedItems()?.forEach {
-                filesManager.deleteLocal(it.path)
+                LocalFilesManager.deleteLocal(it.path)
             }
 
             selectionTracker.clearSelection()
@@ -131,7 +131,6 @@ class GalleryGridFragment : Fragment() {
             val keys = viewGridAdapter
                 .data
                 .map {
-//                    Log.d("TAG", it.id().toString())
                     it.key()
                 }
                 .asIterable()

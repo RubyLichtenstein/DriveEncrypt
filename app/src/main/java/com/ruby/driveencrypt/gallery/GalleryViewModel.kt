@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.tasks.Tasks
 import com.ruby.driveencrypt.drive.log
-import com.ruby.driveencrypt.files.FilesManager
+import com.ruby.driveencrypt.files.RemoteFilesManager
 import com.ruby.driveencrypt.files.LocalFilesManager
 import java.io.File
 
@@ -23,9 +23,9 @@ class GalleryViewModel : ViewModel() {
     }
 
     fun refreshSyncedStatusAndEmit(
-        filesManager: FilesManager
+        remoteFilesManager: RemoteFilesManager
     ) {
-        refreshSyncedStatus(filesManager)
+        refreshSyncedStatus(remoteFilesManager)
             .addOnSuccessListener {
                 if (it != null) {
                     localFilesLiveData.value = it
@@ -34,8 +34,8 @@ class GalleryViewModel : ViewModel() {
     }
 
     private fun refreshSyncedStatus(
-        filesManager: FilesManager
-    ) = filesManager
+        remoteFilesManager: RemoteFilesManager
+    ) = remoteFilesManager
         .filesSyncStatus()
         .onSuccessTask { syncStatus ->
             val localFiles = localFilesLiveData.value
@@ -48,7 +48,7 @@ class GalleryViewModel : ViewModel() {
 
     private fun galleryItemWithSyncStatus(
         galleryItem: GalleryItem,
-        syncStatus: Set<FilesManager.FileSyncStatus>?
+        syncStatus: Set<RemoteFilesManager.FileSyncStatus>?
     ): GalleryItem {
         val fileName = File(galleryItem.path).name
         val status = syncStatus
@@ -60,12 +60,12 @@ class GalleryViewModel : ViewModel() {
 
 
     fun refreshFiles(
-        filesManager: FilesManager,
+        remoteFilesManager: RemoteFilesManager,
         context: Context
     ) {
         showAllLocalFiles(context)
 
-        filesManager
+        remoteFilesManager
             .downloadNotSyncFiles()
             .addOnSuccessListener {
                 var counter = it.size

@@ -13,7 +13,8 @@ import androidx.lifecycle.Observer
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.ruby.driveencrypt.R
 import com.ruby.driveencrypt.drive.DriveService
-import com.ruby.driveencrypt.files.FilesManager
+import com.ruby.driveencrypt.files.LocalFilesManager
+import com.ruby.driveencrypt.files.RemoteFilesManager
 import com.ruby.driveencrypt.gallery.GalleryItem
 import com.ruby.driveencrypt.gallery.GalleryViewModel
 import com.ruby.driveencrypt.share.shareImage
@@ -63,13 +64,13 @@ class GalleryPagerActivity : AppCompatActivity() {
             title = ""
         }
 
-        val filesManager = FilesManager.create(this)
+        val filesManager = RemoteFilesManager.create(this)
         driveService = DriveService.getDriveService(this)
 
         val path = intent.getStringExtra(ARG_IMAGE_PATH)
 
         val imagesPagerAdapter = GalleryPagerAdapter()
-        setupBottomNavigation(filesManager, imagesPagerAdapter)
+        setupBottomNavigation(imagesPagerAdapter)
         imagesPagerAdapter.onTap = { view, galleryItem ->
             if (isSystemUiShowed) {
                 hideSystemUI()
@@ -89,13 +90,6 @@ class GalleryPagerActivity : AppCompatActivity() {
         }
 
         image_pager.adapter = imagesPagerAdapter
-        image_pager.setPageTransformer { page, position ->
-//            imagesPagerAdapter.player?.let {
-//                if(it.isPlaying){
-//                    it.stop()
-//                }
-//            }
-        }
 
         model.showAllLocalFiles(this)
         model.localFilesLiveData.observe(this, Observer {
@@ -111,7 +105,6 @@ class GalleryPagerActivity : AppCompatActivity() {
     }
 
     private fun setupBottomNavigation(
-        filesManager: FilesManager,
         imagesPagerAdapter: GalleryPagerAdapter
     ) {
         val bottomNavigationView = bottom_navigation as BottomNavigationView
@@ -133,11 +126,8 @@ class GalleryPagerActivity : AppCompatActivity() {
 
                 R.id.delete -> {
                     val item = getCurrentGalleryItem(imagesPagerAdapter)
-                    filesManager.deleteLocal(item.path)
+                    LocalFilesManager.deleteLocal(item.path)
                     model.showAllLocalFiles(this)
-
-//                    val fileIdToDelete = model.localFilesLiveData.value
-//                    filesManager.deleteLocal(path)
                 }
             }
         }
@@ -149,7 +139,7 @@ class GalleryPagerActivity : AppCompatActivity() {
         return item
     }
 
-    private fun upload(filesManager: FilesManager, path: String) {
+    private fun upload(remoteFilesManager: RemoteFilesManager, path: String) {
 //        Toast
 //            .makeText(this, "start upload...", Toast.LENGTH_SHORT)
 //            .show()

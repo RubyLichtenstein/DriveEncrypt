@@ -1,10 +1,10 @@
 package com.ruby.driveencrypt.gallery
 
-import com.ruby.driveencrypt.files.FilesManager
+import com.ruby.driveencrypt.files.RemoteFilesManager
 
 data class GalleryItem(
     val path: String,
-    val synced: FilesManager.SyncStatus? = null
+    val synced: RemoteFilesManager.SyncStatus? = null
 ) {
     fun key() = path.hashCode().toLong()
 }

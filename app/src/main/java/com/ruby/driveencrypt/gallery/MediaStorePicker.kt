@@ -3,9 +3,8 @@ package com.ruby.driveencrypt.gallery
 import android.app.Activity
 import android.content.ContentResolver
 import android.content.Intent
-import android.database.Cursor
-import android.net.Uri
 import android.provider.MediaStore
+import android.util.Log
 import com.facebook.common.util.UriUtil
 
 
@@ -47,8 +46,12 @@ class MediaStorePicker {
                 val path = UriUtil.getRealPathFromUri(
                     contentResolver,
                     uri
-                )// pathFromUri(contentResolver, uri, filePathColumn)
-                paths.add(path!!)
+                )
+                if (path != null) path.let {
+                    paths.add(it)
+                } else {
+                    Log.e("TAG", "path is null")
+                }
             }
             onPicturePath(paths)
         }

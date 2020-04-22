@@ -52,12 +52,12 @@
     </style>
 
     <style name="PasswordImage" parent="PasswordButton">
-        <item name="android:background">?attr/selectableItemBackground</item>
+<!--        <item name="android:background">?attr/selectableItemBackground</item>-->
     </style>
 
     <style name="PasswordText" parent="PasswordButton">
         <item name="android:textSize">36sp</item>
-        <item name="android:background">?attr/selectableItemBackground</item>
+<!--        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>-->
         <item name="android:textColor">@android:color/white</item>
     </style>
 

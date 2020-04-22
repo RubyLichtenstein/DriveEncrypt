@@ -8,19 +8,23 @@ import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import java.io.File
 
-class FilesManager(
-    private var context: Context,
-    private val localFilesManager: LocalFilesManager
+class RemoteFilesManager(
+    private val context: Context,
+    private val localFilesManager: LocalFilesManager,
+    private val driveService: DriveService
 ) {
 
     companion object {
-        fun create(context: Context): FilesManager {
-            return FilesManager(context, LocalFilesManager)
-        }
-    }
+        fun create(context: Context): RemoteFilesManager? {
+            val driveService = DriveService.getDriveService(context)
+                ?: return null
 
-    private val driveService by lazy {
-        DriveService.getDriveService(context)!!
+            return RemoteFilesManager(
+                context,
+                LocalFilesManager,
+                driveService
+            )
+        }
     }
 
     fun downloadNotSyncFiles(): Task<List<Task<File>>> =
@@ -31,7 +35,7 @@ class FilesManager(
                         .filter { it.syncStatus == SyncStatus.Remote }
                         .map {
                             downloadFile(
-                                it.fileId!!,
+                                it.fileId!!, // todo
                                 it.fileName
                             )
                         }
@@ -166,6 +170,4 @@ class FilesManager(
                 }
         }
     }
-
-    fun deleteLocal(path: String) = File(path).delete()
 }

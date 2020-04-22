@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.widget.RecyclerView
 import com.ruby.driveencrypt.R
-import com.ruby.driveencrypt.files.FilesManager
+import com.ruby.driveencrypt.files.RemoteFilesManager
 import com.ruby.driveencrypt.files.LocalFilesManager
 import com.ruby.driveencrypt.gallery.BaseGalleryAdapter
 import com.ruby.driveencrypt.utils.animateScale
@@ -75,9 +75,9 @@ class GalleryGridAdapter : BaseGalleryAdapter() {
         }
 
         val icon = when (galleryItem.synced) {
-            FilesManager.SyncStatus.Synced -> R.drawable.ic_cloud_done_black_24dp
-            FilesManager.SyncStatus.Local -> R.drawable.ic_cloud_off_black_24dp
-            FilesManager.SyncStatus.Remote -> null
+            RemoteFilesManager.SyncStatus.Synced -> R.drawable.ic_cloud_done_black_24dp
+            RemoteFilesManager.SyncStatus.Local -> R.drawable.ic_cloud_off_black_24dp
+            RemoteFilesManager.SyncStatus.Remote -> null
             null -> null
         }
 
