@@ -10,6 +10,7 @@ import com.ruby.driveencrypt.R
 import com.ruby.driveencrypt.files.LocalFilesManager
 import com.ruby.driveencrypt.gallery.BaseGalleryAdapter
 import com.ruby.driveencrypt.gallery.GalleryItem
+import com.ruby.driveencrypt.utils.MediaUtils
 import kotlinx.android.synthetic.main.pager_image_list_item.view.*
 import java.io.File
 
@@ -26,7 +27,7 @@ class GalleryPagerAdapter : BaseGalleryAdapter() {
         val path = galleryItem.path
         val uri = Uri.fromFile(File(path))
 
-        if (LocalFilesManager.isVideoFile(path)) {
+        if (MediaUtils.isVideoFile(path)) {
             holder.itemView.video_play_btn.visibility = View.VISIBLE
             holder.itemView.video_play_btn.setOnClickListener {
                 onTapVideo?.invoke(it, uri)

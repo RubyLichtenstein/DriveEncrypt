@@ -9,6 +9,8 @@ import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import com.google.api.client.util.IOUtils
 import com.ruby.driveencrypt.utils.MediaUtils
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -34,10 +36,6 @@ object LocalFilesManager {
         })
     }
 
-    fun isVideoFile(path: String): Boolean {
-        return MediaUtils.isVideo(MediaUtils.extractMime(path))
-    }
-
     fun getLocalFilesPaths(context: Context) =
         filesDirListFiles(context)
             .map { it.path }
@@ -50,31 +48,24 @@ object LocalFilesManager {
             .filterNot { it.contains(THUMBNAIL_PREFIX) }
             .sorted()
 
-    fun saveLocalFiles(
-        context: Context,
-        uri: Uri
-    ): Task<Unit> {
-        return execute {
-            saveLocalFile(context, uri)
-        }
-    }
+    suspend fun saveLocalFiles(context: Context, uri: Uri) {
+        withContext(Dispatchers.IO) {
+            with(context.contentResolver) {
+                openFileDescriptor(
+                    uri,
+                    "r",
+                    null
+                )?.let {
+                    val inputStream = FileInputStream(it.fileDescriptor)
 
-    private fun saveLocalFile(context: Context, uri: Uri) {
-        with(context.contentResolver) {
-            openFileDescriptor(
-                uri,
-                "r",
-                null
-            )?.let {
-                val inputStream = FileInputStream(it.fileDescriptor)
+                    val file = File(
+                        context.filesDir,
+                        getFileName(uri)
+                    )
 
-                val file = File(
-                    context.filesDir,
-                    getFileName(uri)
-                )
-
-                val outputStream = FileOutputStream(file)
-                IOUtils.copy(inputStream, outputStream)
+                    val outputStream = FileOutputStream(file)
+                    IOUtils.copy(inputStream, outputStream)
+                }
             }
         }
     }

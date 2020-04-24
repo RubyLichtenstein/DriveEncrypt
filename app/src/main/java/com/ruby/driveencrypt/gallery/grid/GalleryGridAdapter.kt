@@ -11,6 +11,7 @@ import com.ruby.driveencrypt.R
 import com.ruby.driveencrypt.files.RemoteFilesManager
 import com.ruby.driveencrypt.files.LocalFilesManager
 import com.ruby.driveencrypt.gallery.BaseGalleryAdapter
+import com.ruby.driveencrypt.utils.MediaUtils
 import com.ruby.driveencrypt.utils.animateScale
 import com.ruby.driveencrypt.utils.gone
 import com.ruby.driveencrypt.utils.visible
@@ -43,7 +44,7 @@ class GalleryGridAdapter : BaseGalleryAdapter() {
         val path = galleryItem.path
 
         with(holder.itemView.grid_item_video_play) {
-            if (LocalFilesManager.isVideoFile(path)) {
+            if (MediaUtils.isVideoFile(path)) {
                 visible()
             } else {
                 gone()

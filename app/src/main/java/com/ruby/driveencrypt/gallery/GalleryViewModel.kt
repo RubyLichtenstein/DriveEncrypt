@@ -11,10 +11,12 @@ import android.provider.MediaStore
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.google.android.gms.tasks.Tasks
 import com.ruby.driveencrypt.files.LocalFilesManager
 import com.ruby.driveencrypt.files.RemoteFilesManager
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 
@@ -102,11 +104,11 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
         context: Context,
         paths: List<Uri>
     ) {
-        paths.map {
-            LocalFilesManager.saveLocalFiles(context, it)
-                .addOnSuccessListener {
-                    showAllLocalFiles(context)
-                }
+        viewModelScope.launch {
+            paths.map {
+                LocalFilesManager.saveLocalFiles(context, it)
+                showAllLocalFiles(context)
+            }
         }
     }
 

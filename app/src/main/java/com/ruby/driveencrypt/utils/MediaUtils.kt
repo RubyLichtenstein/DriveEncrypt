@@ -51,4 +51,8 @@ object MediaUtils {
     fun isNonNativeSupportedMimeType(mimeType: String): Boolean {
         return ADDITIONAL_ALLOWED_MIME_TYPES.containsValue(mimeType)
     }
+
+    fun isVideoFile(path: String): Boolean {
+        return MediaUtils.isVideo(MediaUtils.extractMime(path))
+    }
 }
