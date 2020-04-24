@@ -93,7 +93,7 @@ class GalleryPagerActivity : AppCompatActivity() {
 
         model.showAllLocalFiles(this)
         model.localFilesLiveData.observe(this, Observer {
-            imagesPagerAdapter.addAll(it)
+            imagesPagerAdapter.submitList(it)
             val index = it.indexOfFirst { it.path == path }
             image_pager.setCurrentItem(index, false)
         })
@@ -135,7 +135,7 @@ class GalleryPagerActivity : AppCompatActivity() {
 
     private fun getCurrentGalleryItem(imagesPagerAdapter: GalleryPagerAdapter): GalleryItem {
         val index = image_pager.currentItem
-        val item = imagesPagerAdapter.data.get(index)
+        val item = imagesPagerAdapter.currentList[index]
         return item
     }
 

@@ -5,8 +5,8 @@ import com.ruby.driveencrypt.gallery.BaseGalleryAdapter
 
 class MyItemKeyProvider(private val rvAdapter: BaseGalleryAdapter) :
     ItemKeyProvider<Long>(SCOPE_CACHED) {
-    override fun getKey(position: Int): Long = rvAdapter.data[position].key()
-    override fun getPosition(key: Long): Int = rvAdapter.data.indexOfFirst {
+    override fun getKey(position: Int): Long = rvAdapter.currentList[position].key()
+    override fun getPosition(key: Long): Int = rvAdapter.currentList.indexOfFirst {
         key == it.key()
     }
 }

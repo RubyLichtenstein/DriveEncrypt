@@ -28,7 +28,7 @@ class GalleryGridFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var viewGridAdapter: GalleryGridAdapter
     private val SPAN_COUNT = 3
-    var remoteFilesManager: RemoteFilesManager? = null
+    private var remoteFilesManager: RemoteFilesManager? = null
     lateinit var selectionTracker: SelectionTracker<Long>
 
     val model: GalleryViewModel by activityViewModels()
@@ -48,7 +48,7 @@ class GalleryGridFragment : Fragment() {
                 empty_state.visibility = View.GONE
             }
 
-            viewGridAdapter.addAll(it)
+            viewGridAdapter.submitList(it)
         })
     }
 
@@ -129,7 +129,7 @@ class GalleryGridFragment : Fragment() {
 
         select_all.setOnClickListener {
             val keys = viewGridAdapter
-                .data
+                .currentList
                 .map {
                     it.key()
                 }

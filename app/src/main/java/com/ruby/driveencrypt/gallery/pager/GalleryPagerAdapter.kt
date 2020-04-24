@@ -30,7 +30,7 @@ class GalleryPagerAdapter : BaseGalleryAdapter() {
         holder: RecyclerView.ViewHolder,
         position: Int
     ) {
-        val galleryItem = data[position]
+        val galleryItem = getItem(position)
         val path = galleryItem.path
         val uri = Uri.fromFile(File(path))
 

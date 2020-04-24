@@ -12,13 +12,10 @@ import com.ruby.driveencrypt.files.RemoteFilesManager
 import com.ruby.driveencrypt.files.LocalFilesManager
 import com.ruby.driveencrypt.gallery.BaseGalleryAdapter
 import com.ruby.driveencrypt.utils.animateScale
-import com.ruby.driveencrypt.utils.displayMetrics
 import com.ruby.driveencrypt.utils.gone
 import com.ruby.driveencrypt.utils.visible
 import kotlinx.android.synthetic.main.gallery_grid_list_item.view.*
 import java.io.File
-
-val GRID_ITEMS = 3
 
 class GalleryGridAdapter : BaseGalleryAdapter() {
     var tracker: SelectionTracker<Long>? = null
@@ -38,29 +35,26 @@ class GalleryGridAdapter : BaseGalleryAdapter() {
                 false
             )
 
-        rootView.gallery_image.layoutParams.height =
-            rootView.displayMetrics().widthPixels / GRID_ITEMS
         return ImageViewHolder(rootView)
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        val galleryItem = data[position]
+        val galleryItem = getItem(position)
         val path = galleryItem.path
-        val context = holder.itemView.context
 
-        val file = File(path)
-        val uri = Uri.fromFile(file)
-
-        if (LocalFilesManager.isVideoFile(path)) {
-            holder.itemView.grid_item_video_play.visibility = View.VISIBLE
-        } else {
-            holder.itemView.grid_item_video_play.visibility = View.GONE
+        with(holder.itemView.grid_item_video_play) {
+            if (LocalFilesManager.isVideoFile(path)) {
+                visible()
+            } else {
+                gone()
+            }
         }
-
-        val size = context.displayMetrics().widthPixels / GRID_ITEMS
 
         val galleryImage = holder.itemView
             .gallery_image
+
+        val file = File(path)
+        val uri = Uri.fromFile(file)
 
         Glide.with(galleryImage)
             .load(uri)
@@ -100,11 +94,11 @@ class GalleryGridAdapter : BaseGalleryAdapter() {
         }
     }
 
-    override fun getItemId(position: Int): Long = data[position].key()
+    override fun getItemId(position: Int): Long = getItem(position).key()
 
     fun getSelectedItems() = tracker
         ?.selection
         ?.mapNotNull { selected ->
-            data.find { it.key() == selected }
+            currentList.find { it.key() == selected }
         }
 }
