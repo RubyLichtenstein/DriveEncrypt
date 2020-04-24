@@ -13,8 +13,6 @@ abstract class BaseGalleryAdapter :
 
     var onClick: ((View, GalleryItem) -> Unit)? = null
 
-//    val data = mutableListOf<GalleryItem>()
-
     inner class ImageViewHolder(private val view: View) : RecyclerView.ViewHolder(view) {
         fun getItemDetails(): ItemDetailsLookup.ItemDetails<Long> =
             object : ItemDetailsLookup.ItemDetails<Long>() {
@@ -22,20 +20,5 @@ abstract class BaseGalleryAdapter :
                 override fun getSelectionKey(): Long = itemId
             }
     }
-
-//    override fun getItemCount() = data.size
-
-//    fun addAll(newList: List<GalleryItem>) {
-//        val diffResult = DiffUtil.calculateDiff(
-//            GalleryGridDiffUtilCallback(
-//                newItems = newList,
-//                oldItems = this.data
-//            )
-//        )
-//
-//        this.data.clear()
-//        this.data.addAll(newList)
-//        diffResult.dispatchUpdatesTo(this)
-//    }
 }
 

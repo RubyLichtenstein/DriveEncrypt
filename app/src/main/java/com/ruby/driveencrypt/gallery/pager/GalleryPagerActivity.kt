@@ -9,6 +9,7 @@ import android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
 import android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.ruby.driveencrypt.R
@@ -82,6 +83,10 @@ class GalleryPagerActivity : AppCompatActivity() {
                 gallery_pager_toolbar.visibility = View.VISIBLE
             }
         }
+
+//        val color = ContextCompat.getColor(this, R.color.primaryColor)
+//        bottom_navigation.setBackgroundColor(color)
+//        window.navigationBarColor = color
 
         imagesPagerAdapter.onTapVideo = { view, uri ->
             val intent = Intent(this, VideoActivity::class.java)

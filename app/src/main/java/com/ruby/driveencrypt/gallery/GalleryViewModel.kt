@@ -1,20 +1,31 @@
 package com.ruby.driveencrypt.gallery
 
 import android.app.Application
+import android.app.RecoverableSecurityException
+import android.content.ContentResolver
 import android.content.Context
+import android.content.IntentSender
 import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.tasks.Tasks
-import com.ruby.driveencrypt.drive.log
-import com.ruby.driveencrypt.files.RemoteFilesManager
 import com.ruby.driveencrypt.files.LocalFilesManager
+import com.ruby.driveencrypt.files.RemoteFilesManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 
 class GalleryViewModel(application: Application) : AndroidViewModel(application) {
     val localFilesLiveData = MutableLiveData<List<GalleryItem>>()
     val refreshLiveData = MutableLiveData<Boolean>()
     val isInSelectionModeLiveData = MutableLiveData<Boolean>()
+
+    private val _permissionNeededForDelete = MutableLiveData<IntentSender?>()
+    val permissionNeededForDelete: LiveData<IntentSender?> = _permissionNeededForDelete
+    private var pendingDeleteImage: MediaStoreImage? = null
 
     fun showAllLocalFiles(context: Context) {
         val localFilesPaths = LocalFilesManager
@@ -91,16 +102,41 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
         context: Context,
         paths: List<Uri>
     ) {
-        val tasks = paths.map {
+        paths.map {
             LocalFilesManager.saveLocalFiles(context, it)
+                .addOnSuccessListener {
+                    showAllLocalFiles(context)
+                }
         }
+    }
 
-        Tasks.whenAllComplete(tasks)
-            .addOnCompleteListener {
-                showAllLocalFiles(context)
+    suspend fun performDeleteImage(
+        contentResolver: ContentResolver,
+        image: MediaStoreImage
+    ) {
+        withContext(Dispatchers.IO) {
+            try {
+                contentResolver.delete(
+                    image.contentUri,
+                    "${MediaStore.Images.Media._ID} = ?",
+                    arrayOf(image.id.toString())
+                )
+            } catch (securityException: SecurityException) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    val recoverableSecurityException =
+                        securityException as? RecoverableSecurityException
+                            ?: throw securityException
+
+                    // Signal to the Activity that it needs to request permission and
+                    // try the delete again if it succeeds.
+                    pendingDeleteImage = image
+                    _permissionNeededForDelete.postValue(
+                        recoverableSecurityException.userAction.actionIntent.intentSender
+                    )
+                } else {
+                    throw securityException
+                }
             }
-
-//        deleteFile(file)
-//        filesManager.uploadFile(picturePath)?.addOnSuccessListener { }
+        }
     }
 }

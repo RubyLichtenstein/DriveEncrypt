@@ -24,8 +24,11 @@ import com.ruby.driveencrypt.gallery.*
 import com.ruby.driveencrypt.gallery.grid.GalleryGridFragment
 import com.ruby.driveencrypt.lockscreen.LockScreenSettingsActivity
 import com.ruby.driveencrypt.signin.GoogleSignInHelper
+import com.ruby.driveencrypt.utils.createCircularReveal
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.main_fabs.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import pub.devrel.easypermissions.EasyPermissions
 import kotlin.math.hypot
 
@@ -35,37 +38,9 @@ class MainActivity : AppCompatActivity() {
     private var remoteFilesManager: RemoteFilesManager? = null
     private lateinit var googleSignInHelper: GoogleSignInHelper
     private var isFabMenuVisable = false
-    private val model: GalleryViewModel by viewModels()
+    private val viewModel: GalleryViewModel by viewModels()
 
     private val mediaCapture = MediaCapture()
-
-    fun createCircularReveal(
-        myView: View,
-        anchor: View
-    ) {
-        // previously invisible view
-        // get the center for the clipping circle
-        val anchorCx = anchor.x + (anchor.width / 2)
-        val anchorCy = anchor.y + (anchor.height / 2)
-
-        val cx = myView.width// / 2
-        val cy = myView.height// / 2
-
-        // get the final radius for the clipping circle
-        val finalRadius = hypot(cx.toDouble(), cy.toDouble()).toFloat()
-
-        // create the animator for this view (the start radius is zero)
-        val anim = ViewAnimationUtils.createCircularReveal(
-            myView,
-            anchorCx.toInt(),
-            anchorCy.toInt(),
-            0f,
-            finalRadius
-        )
-        // make the view visible and start the animation
-        myView.visibility = View.VISIBLE
-        anim.start()
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,6 +48,23 @@ class MainActivity : AppCompatActivity() {
         window.addFlags(FLAG_TRANSLUCENT_STATUS or FLAG_TRANSLUCENT_NAVIGATION)
         setSupportActionBar(grid_toolbar)
 
+        viewModel.permissionNeededForDelete.observe(this, Observer { intentSender ->
+            intentSender?.let {
+                // On Android 10+, if the app doesn't have permission to modify
+                // or delete an item, it returns an `IntentSender` that we can
+                // use here to prompt the user to grant permission to delete (or modify)
+                // the image.
+                startIntentSenderForResult(
+                    intentSender,
+                    DELETE_PERMISSION_REQUEST,
+                    null,
+                    0,
+                    0,
+                    0,
+                    null
+                )
+            }
+        })
 //        checkStoragePermission()
         Permissions.requestPermission(this)
 
@@ -113,7 +105,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        model.isInSelectionModeLiveData.observe(this, Observer {
+        viewModel.isInSelectionModeLiveData.observe(this, Observer {
             grid_toolbar.visibility = if (it) {
                 View.GONE
             } else {
@@ -201,7 +193,7 @@ class MainActivity : AppCompatActivity() {
                     .addOnSuccessListener {
                         it.onEach {
                             it.addOnSuccessListener {
-                                model.showAllLocalFiles(this)
+                                viewModel.showAllLocalFiles(this)
                             }
                         }
                     }
@@ -210,7 +202,7 @@ class MainActivity : AppCompatActivity() {
 
             // todo show only if drive active
             if (id == R.id.sync_with_drive) {
-                model.refreshSyncedStatusAndEmit(remoteFilesManager)
+                viewModel.refreshSyncedStatusAndEmit(remoteFilesManager)
                 return true
             }
         }
@@ -241,18 +233,33 @@ class MainActivity : AppCompatActivity() {
                     imageGalleryHelper.onResultFromGallery(
                         intent
                     ) { paths ->
-                        model.handleImagePath(this, paths)
+//                        deleteFiles(paths)
+                        viewModel.handleImagePath(this, paths)
                     }
                 }
             }
 
             if (requestCode == REQUEST_TAKE_PHOTO) {
-                model.handleImagePath(this, listOf(mediaCapture.currentPhotoUri!!))
+                viewModel.handleImagePath(this, listOf(mediaCapture.currentPhotoUri!!))
             }
 
             if (requestCode == REQUEST_VIDEO_CAPTURE) {
                 val videoUri: Uri = intent!!.data!!
-                model.handleImagePath(this, listOf(videoUri))
+                viewModel.handleImagePath(this, listOf(videoUri))
+            }
+        }
+    }
+
+    private fun deleteFiles(paths: List<Uri>) {
+        paths.forEach { uri ->
+            GlobalScope.launch {
+                val res = imageGalleryHelper.queryImages(contentResolver, uri)
+                res.forEach {
+                    viewModel.performDeleteImage(
+                        contentResolver,
+                        it
+                    )
+                }
             }
         }
     }

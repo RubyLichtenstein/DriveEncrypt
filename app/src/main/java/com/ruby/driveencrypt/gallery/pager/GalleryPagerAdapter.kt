@@ -15,16 +15,8 @@ import java.io.File
 
 class GalleryPagerAdapter : BaseGalleryAdapter() {
 
-    companion object {
-        const val VIEW_TYPE_IMAGE: Int = 0
-    }
-
     var onTap: ((View, GalleryItem) -> Unit)? = null
     var onTapVideo: ((View, Uri) -> Unit)? = null
-
-    override fun getItemViewType(position: Int): Int {
-        return VIEW_TYPE_IMAGE
-    }
 
     override fun onBindViewHolder(
         holder: RecyclerView.ViewHolder,
@@ -52,12 +44,11 @@ class GalleryPagerAdapter : BaseGalleryAdapter() {
         galleryItem: GalleryItem
     ) {
         val imageView = holder.itemView.page_image
+
         Glide.with(imageView)
             .load(uri)
             .thumbnail(0.33f)
-            .centerCrop()
             .into(imageView)
-
 
         imageView.setOnClickListener { view ->
             onTap?.invoke(view, galleryItem)
