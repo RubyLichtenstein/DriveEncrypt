@@ -3,14 +3,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <me.relex.photodraweeview.PhotoDraweeView
-
+    <ImageView
         android:id="@+id/page_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:transitionName="image">
-
-    </me.relex.photodraweeview.PhotoDraweeView>
+        android:transitionName="image" />
 
     <ImageView
         android:id="@+id/video_play_btn"
@@ -18,7 +15,5 @@
         android:layout_height="48dp"
         android:layout_gravity="center"
         android:src="@drawable/ic_play_circle_filled_black_24dp">
-
     </ImageView>
-
 </FrameLayout>

@@ -1,12 +1,9 @@
 package com.ruby.driveencrypt.gallery
 
 import android.app.Activity
-import android.content.ContentResolver
 import android.content.Intent
+import android.net.Uri
 import android.provider.MediaStore
-import android.util.Log
-import com.facebook.common.util.UriUtil
-
 
 val REQUEST_PICK_IMAGES = 10
 val REQUEST_PICK_VIDEO = 20
@@ -33,25 +30,15 @@ class MediaStorePicker {
 
     fun onResultFromGallery(
         intent: Intent,
-        contentResolver: ContentResolver,
-        onPicturePath: (List<String>) -> Unit
+        onPicturePath: (List<Uri>) -> Unit
     ) {
-        val filePathColumn = arrayOf(MediaStore.Images.Media.DATA)
         val clipData = intent.clipData
         if (clipData != null) {
-            val paths = ArrayList<String>()
+            val paths = ArrayList<Uri>()
             for (i in 0 until clipData.itemCount) {
                 val item = clipData.getItemAt(i)
                 val uri = item.uri
-                val path = UriUtil.getRealPathFromUri(
-                    contentResolver,
-                    uri
-                )
-                if (path != null) path.let {
-                    paths.add(it)
-                } else {
-                    Log.e("TAG", "path is null")
-                }
+                paths.add(uri)
             }
             onPicturePath(paths)
         }

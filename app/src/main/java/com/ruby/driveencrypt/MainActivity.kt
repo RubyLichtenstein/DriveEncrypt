@@ -3,10 +3,10 @@ package com.ruby.driveencrypt
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.util.Log
+import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -16,10 +16,9 @@ import android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
-import com.facebook.common.util.UriUtil
 import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.ruby.driveencrypt.drive.log
 import com.ruby.driveencrypt.files.RemoteFilesManager
 import com.ruby.driveencrypt.gallery.*
 import com.ruby.driveencrypt.gallery.grid.GalleryGridFragment
@@ -74,7 +73,8 @@ class MainActivity : AppCompatActivity() {
         window.addFlags(FLAG_TRANSLUCENT_STATUS or FLAG_TRANSLUCENT_NAVIGATION)
         setSupportActionBar(grid_toolbar)
 
-        checkStoragePermission()
+//        checkStoragePermission()
+        Permissions.requestPermission(this)
 
         supportFragmentManager
             .beginTransaction()
@@ -90,22 +90,7 @@ class MainActivity : AppCompatActivity() {
         remoteFilesManager?.initFolderId(this)
 
         fab_menu.setOnClickListener {
-            imageGalleryHelper.selectImages(this)
-        }
-
-        fab_menu.setOnClickListener {
             handleFabMenuClick()
-        }
-
-        fun animateAlpha(view: View, value: Float) {
-            view
-                .animate()
-                .alpha(value)
-                .setDuration(200)
-                .withEndAction {
-                    view.alpha = value
-                }
-                .start()
         }
 
         fab_import_videos.setOnClickListener {
@@ -117,11 +102,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         fab_take_photo.setOnClickListener {
-            mediaCapture.dispatchTakePictureIntent(this)
+            checkCameraPermission {
+                mediaCapture.dispatchTakePictureIntent(this)
+            }
         }
 
         fab_take_video.setOnClickListener {
-            mediaCapture.dispatchTakeVideoIntent(this)
+            checkCameraPermission {
+                mediaCapture.dispatchTakeVideoIntent(this)
+            }
         }
 
         model.isInSelectionModeLiveData.observe(this, Observer {
@@ -156,15 +145,13 @@ class MainActivity : AppCompatActivity() {
         isFabMenuVisable = !isFabMenuVisable
     }
 
-    private fun checkStoragePermission() {
+    private fun checkCameraPermission(onHasPermissions: () -> Unit) {
         val galleryPermissions = arrayOf(
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.CAMERA
         )
 
         if (EasyPermissions.hasPermissions(this, *galleryPermissions)) {
-            //            pickImageFromGallery()
+            onHasPermissions()
         } else {
             EasyPermissions.requestPermissions(
                 this,
@@ -252,8 +239,7 @@ class MainActivity : AppCompatActivity() {
             when (requestCode) {
                 REQUEST_PICK_IMAGES, REQUEST_PICK_VIDEO -> if (intent != null) {
                     imageGalleryHelper.onResultFromGallery(
-                        intent,
-                        contentResolver
+                        intent
                     ) { paths ->
                         model.handleImagePath(this, paths)
                     }
@@ -261,13 +247,12 @@ class MainActivity : AppCompatActivity() {
             }
 
             if (requestCode == REQUEST_TAKE_PHOTO) {
-                model.handleImagePath(this, listOf(mediaCapture.currentPhotoPath!!))
+                model.handleImagePath(this, listOf(mediaCapture.currentPhotoUri!!))
             }
 
             if (requestCode == REQUEST_VIDEO_CAPTURE) {
                 val videoUri: Uri = intent!!.data!!
-                val path = UriUtil.getRealPathFromUri(contentResolver, videoUri)
-                model.handleImagePath(this, listOf(path!!))
+                model.handleImagePath(this, listOf(videoUri))
             }
         }
     }
@@ -277,6 +262,58 @@ class MainActivity : AppCompatActivity() {
             handleFabMenuClick()
         } else {
             super.onBackPressed()
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        when (requestCode) {
+            READ_EXTERNAL_STORAGE_REQUEST -> {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // showImages()
+                    // todo
+                } else {
+                    // If we weren't granted the permission, check to see if we should show
+                    // rationale for the permission.
+                    val showRationale =
+                        ActivityCompat.shouldShowRequestPermissionRationale(
+                            this,
+                            Manifest.permission.READ_EXTERNAL_STORAGE
+                        )
+
+                    /**
+                     * If we should show the rationale for requesting storage permission, then
+                     * we'll show [ActivityMainBinding.permissionRationaleView] which does this.
+                     *
+                     * If `showRationale` is false, this means the user has not only denied
+                     * the permission, but they've clicked "Don't ask again". In this case
+                     * we send the user to the settings page for the app so they can grant
+                     * the permission (Yay!) or uninstall the app.
+                     */
+                    if (showRationale) {
+//                        showNoAccess()
+                    } else {
+                        goToSettings()
+                    }
+                }
+                return
+            }
+        }
+    }
+
+    private fun goToSettings() {
+        Intent(
+            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+            Uri.parse("package:$packageName")
+        ).apply {
+            addCategory(Intent.CATEGORY_DEFAULT)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }.also { intent ->
+            startActivity(intent)
         }
     }
 

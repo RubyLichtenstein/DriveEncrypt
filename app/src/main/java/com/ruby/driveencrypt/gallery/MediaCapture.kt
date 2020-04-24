@@ -18,6 +18,7 @@ val REQUEST_VIDEO_CAPTURE = 4
 class MediaCapture {
 
     var currentPhotoPath: String? = null
+    var currentPhotoUri: Uri? = null
 
     @Throws(IOException::class)
     private fun createImageFile(activity: Activity): File {
@@ -43,27 +44,17 @@ class MediaCapture {
         }
     }
 
-
     fun dispatchTakePictureIntent(activity: Activity) {
         Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
             // Ensure that there's a camera activity to handle the intent
             takePictureIntent.resolveActivity(activity.packageManager)?.also {
-                // Create the File where the photo should go
-//                val photoFile: File? = try {
-
-//                } catch (ex: IOException) {
-                // Error occurred while creating the File
-//                    ...
-//                    null
-//                }
-                // Continue only if the File was successfully created
                 createImageFile(activity).also {
                     val photoURI: Uri = getUriForFile(activity, it)!! // todo
+                    currentPhotoUri = photoURI
                     takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
                     activity.startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO)
                 }
             }
         }
     }
-
 }

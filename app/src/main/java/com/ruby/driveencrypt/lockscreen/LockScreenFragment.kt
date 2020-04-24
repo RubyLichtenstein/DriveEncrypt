@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.View.OnLongClickListener
 import android.view.ViewGroup
+import android.view.animation.AnimationSet
 import android.view.animation.AnimationUtils
 import android.widget.Button
 import android.widget.TextView
@@ -18,10 +19,10 @@ import androidx.fragment.app.Fragment
 import com.beautycoder.pflockscreen.PinPreferences
 import com.beautycoder.pflockscreen.fragments.PFFingerprintAuthDialogFragment
 import com.beautycoder.pflockscreen.fragments.PFFingerprintAuthListener
-import com.beautycoder.pflockscreen.views.PFCodeView
-import com.beautycoder.pflockscreen.views.PFCodeView.OnPFCodeListener
+import com.ruby.driveencrypt.lockscreen.PFCodeView.OnPFCodeListener
 import com.ruby.driveencrypt.MainActivity
 import com.ruby.driveencrypt.R
+import com.ruby.driveencrypt.utils.invisible
 import kotlinx.android.synthetic.main.fragment_lock_screen_pf.view.*
 
 
@@ -43,7 +44,7 @@ class LockScreenFragment : Fragment() {
     private lateinit var mNextButton: Button
     private lateinit var mCodeView: PFCodeView
     private lateinit var titleView: TextView
-    private var mUseFingerPrint = true
+    private var mUseFingerPrint = false
     private var mIsCreateMode = false
 
     private var mCode = ""
@@ -116,7 +117,7 @@ class LockScreenFragment : Fragment() {
 
     private fun renderByMode(mode: Mode) {
         titleView = mRootView!!.findViewById(R.id.title_text_view)
-        titleView.text = getTitle()
+        titleView.text = getTitleText()
 
         if (!mUseFingerPrint) {
             mFingerprintButton.visibility = View.GONE
@@ -129,15 +130,16 @@ class LockScreenFragment : Fragment() {
         if (mIsCreateMode) {
             mFingerprintButton.visibility = View.GONE
             mNextButton.setOnClickListener(mOnNextButtonClickListener)
+            mNextButton.isEnabled = true
         } else {
             mNextButton.setOnClickListener(null)
+            mNextButton.invisible()
         }
 
-        mNextButton.isEnabled = false
         mCodeView.setCodeLength(codeLength)
     }
 
-    private fun getTitle(): String {
+    private fun getTitleText(): String {
         return when (mode) {
             Mode.CREATE -> titleCREATE
             Mode.AUTH -> titleAUTH
@@ -257,6 +259,7 @@ class LockScreenFragment : Fragment() {
                 onCodeInputSuccessful()
             } else {
                 onPinLoginFailed()
+                showWrongPinMessage()
                 mCodeView.clearCode()
                 errorAction()
             }
@@ -268,6 +271,10 @@ class LockScreenFragment : Fragment() {
                 return
             }
         }
+    }
+
+    private fun showWrongPinMessage() {
+        titleView.text = "Wrong pin, please renter."
     }
 
     fun onPinLoginFailed() {
@@ -302,7 +309,7 @@ class LockScreenFragment : Fragment() {
                 ) && mCode != mCodeValidation
             ) {
                 onNewCodeValidationFailed()
-                titleView.text = getTitle()
+                titleView.text = getTitleText()
                 cleanCode()
                 return@OnClickListener
             }
@@ -320,9 +327,16 @@ class LockScreenFragment : Fragment() {
         val v =
             requireContext().getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
         v.vibrate(400)
-        val animShake =
-            AnimationUtils.loadAnimation(context, R.anim.shake_pf)
-        mCodeView.startAnimation(animShake)
+
+//        VibrationEffect.createOneShot(400, VibrationEffect.DEFAULT_AMPLITUDE)
+        val animShake = AnimationUtils
+            .loadAnimation(context, R.anim.shake_pf)
+
+        val set = AnimationSet(false)
+        set.addAnimation(animShake)
+
+        mCodeView
+            .startAnimation(set)
     }
 
     private fun showMainActivity(activity: Activity) {

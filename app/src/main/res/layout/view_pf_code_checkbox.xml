@@ -3,6 +3,7 @@
     style="?pf_code_view"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:src="@drawable/ic_fingerprint_black_24dp">
+    android:padding="2dp"
+    android:src="@drawable/circle_code_fill_pf_lockscreen">
 
 </ImageView>

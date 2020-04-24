@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.ruby.driveencrypt.R
 import com.ruby.driveencrypt.files.RemoteFilesManager
 import com.ruby.driveencrypt.files.LocalFilesManager
@@ -14,7 +15,6 @@ import com.ruby.driveencrypt.utils.animateScale
 import com.ruby.driveencrypt.utils.displayMetrics
 import com.ruby.driveencrypt.utils.gone
 import com.ruby.driveencrypt.utils.visible
-import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.gallery_grid_list_item.view.*
 import java.io.File
 
@@ -48,14 +48,13 @@ class GalleryGridAdapter : BaseGalleryAdapter() {
         val path = galleryItem.path
         val context = holder.itemView.context
 
-        val uri = if (LocalFilesManager.isVideoFile(path)) {
+        val file = File(path)
+        val uri = Uri.fromFile(file)
+
+        if (LocalFilesManager.isVideoFile(path)) {
             holder.itemView.grid_item_video_play.visibility = View.VISIBLE
-            val file = File(path)
-            Uri.fromFile(File(LocalFilesManager.tnPath(context, file)))
         } else {
             holder.itemView.grid_item_video_play.visibility = View.GONE
-            val file = File(path)
-            Uri.fromFile(File(LocalFilesManager.tnPath(context, file)))
         }
 
         val size = context.displayMetrics().widthPixels / GRID_ITEMS
@@ -63,10 +62,9 @@ class GalleryGridAdapter : BaseGalleryAdapter() {
         val galleryImage = holder.itemView
             .gallery_image
 
-        Picasso
-            .get()
+        Glide.with(galleryImage)
             .load(uri)
-            .resize(size, size)
+            .thumbnail(0.33f)
             .centerCrop()
             .into(galleryImage)
 

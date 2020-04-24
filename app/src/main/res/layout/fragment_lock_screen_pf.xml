@@ -23,10 +23,10 @@
         android:theme="@style/PFLockScreenTitleTextStyle"
         app:layout_constraintBottom_toTopOf="@+id/code_view" />
 
-    <com.beautycoder.pflockscreen.views.PFCodeView
+    <com.ruby.driveencrypt.lockscreen.PFCodeView
         android:id="@+id/code_view"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="56dp"
         android:layout_margin="24dp"
         app:layout_constraintBottom_toTopOf="@+id/password_buttons"
         app:layout_constraintEnd_toEndOf="parent"

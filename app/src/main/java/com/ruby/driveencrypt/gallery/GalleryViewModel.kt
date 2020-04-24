@@ -1,15 +1,17 @@
 package com.ruby.driveencrypt.gallery
 
+import android.app.Application
 import android.content.Context
+import android.net.Uri
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import com.google.android.gms.tasks.Tasks
 import com.ruby.driveencrypt.drive.log
 import com.ruby.driveencrypt.files.RemoteFilesManager
 import com.ruby.driveencrypt.files.LocalFilesManager
 import java.io.File
 
-class GalleryViewModel : ViewModel() {
+class GalleryViewModel(application: Application) : AndroidViewModel(application) {
     val localFilesLiveData = MutableLiveData<List<GalleryItem>>()
     val refreshLiveData = MutableLiveData<Boolean>()
     val isInSelectionModeLiveData = MutableLiveData<Boolean>()
@@ -85,14 +87,12 @@ class GalleryViewModel : ViewModel() {
             }
     }
 
-    fun handleImagePath(context: Context, paths: List<String>) {
+    fun handleImagePath(
+        context: Context,
+        paths: List<Uri>
+    ) {
         val tasks = paths.map {
-            val file = java.io.File(it)
-            LocalFilesManager.saveLocalFiles(context, file)
-                .log(
-                    "save_image",
-                    file.name
-                )
+            LocalFilesManager.saveLocalFiles(context, it)
         }
 
         Tasks.whenAllComplete(tasks)

@@ -11,15 +11,20 @@ fun animateAlpha(view: View, value: Float, endAction: Runnable) {
         .start()
 }
 
-fun animateScale(galleryImage: View, scale: Float) {
-    galleryImage
+fun animateScale(
+    view: View,
+    scale: Float,
+    endAction: (() -> Unit)? = null
+) {
+    view
         .animate()
         .scaleX(scale)
         .scaleY(scale)
         .setDuration(200)
         .withEndAction {
-            galleryImage.scaleX = scale
-            galleryImage.scaleY = scale
+            view.scaleX = scale
+            view.scaleY = scale
+            endAction?.invoke()
         }
         .start()
 }
