@@ -1,39 +1,35 @@
 package com.ruby.driveencrypt.lockscreen
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.os.Vibrator
-import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.OnLongClickListener
 import android.view.ViewGroup
 import android.view.animation.AnimationSet
 import android.view.animation.AnimationUtils
-import android.widget.Button
 import android.widget.TextView
-import android.widget.Toast
 import androidx.fragment.app.Fragment
-import com.beautycoder.pflockscreen.PinPreferences
-import com.beautycoder.pflockscreen.fragments.PFFingerprintAuthDialogFragment
-import com.beautycoder.pflockscreen.fragments.PFFingerprintAuthListener
-import com.ruby.driveencrypt.lockscreen.PFCodeView.OnPFCodeListener
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.observe
 import com.ruby.driveencrypt.MainActivity
 import com.ruby.driveencrypt.R
-import com.ruby.driveencrypt.utils.invisible
-import kotlinx.android.synthetic.main.fragment_lock_screen_pf.view.*
+import com.ruby.driveencrypt.lockscreen.LockScreenViewModel.Mode.*
+import com.ruby.driveencrypt.utils.gone
+import com.ruby.driveencrypt.utils.visible
+import kotlinx.android.synthetic.main.fragment_lock_screen.*
+import kotlinx.android.synthetic.main.fragment_lock_screen.view.*
 
 
 class LockScreenFragment : Fragment() {
-    private val pinPreferences = PinPreferences()
 
     companion object {
-        fun newInstance(mode: Mode) =
+        const val ARG_CHANGE = "change"
+
+        fun newInstance(change: Boolean) =
             LockScreenFragment().apply {
                 arguments = Bundle().apply {
-                    putSerializable("MODE", mode)
+                    putBoolean(ARG_CHANGE, change)
                 }
             }
     }
@@ -41,38 +37,16 @@ class LockScreenFragment : Fragment() {
     private lateinit var mFingerprintButton: View
     private lateinit var mDeleteButton: View
 
-    private lateinit var mNextButton: Button
-    private lateinit var mCodeView: PFCodeView
+    private lateinit var mCodeView: CodeView
     private lateinit var titleView: TextView
-    private var mUseFingerPrint = false
-    private var mIsCreateMode = false
 
-    private var mCode = ""
-    private var mCodeValidation = ""
-
-    val titleCREATE = "Create Code"
-    val titleAUTH = "Unlock with your pin code or fingerprint"
-    val titleCHANGE = "Please confirm your pin to continue."
-
-    private var mRootView: View? = null
-
-    enum class Mode {
-        CREATE,
-        AUTH,
-        CHANGE,
-        CHANGE_CREATE,
-    }
-
-    lateinit var mode: Mode
-
-    val codeLength = 4
-    val isNewCodeValidation = true
-    val isAutoShowFingerprint = true
+    private val viewModel: LockScreenViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            mode = it.getSerializable("MODE") as Mode
+            val change = it.getBoolean(ARG_CHANGE)
+            viewModel.changeCodeMode = change
         }
     }
 
@@ -81,70 +55,74 @@ class LockScreenFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(
-            R.layout.fragment_lock_screen_pf, container,
+            R.layout.fragment_lock_screen, container,
             false
         )
 
         mFingerprintButton = view.findViewById(R.id.button_finger_print)
         mDeleteButton = view.findViewById(R.id.button_delete)
-        mNextButton = view.findViewById(R.id.button_next)
         mDeleteButton.setOnClickListener(mOnDeleteButtonClickListener)
         mDeleteButton.setOnLongClickListener(mOnDeleteButtonOnLongClickListener)
         mFingerprintButton.setOnClickListener(mOnFingerprintClickListener)
         mCodeView = view.findViewById(R.id.code_view)
-        initKeyViews(view)
-        mCodeView.setListener(mCodeListener)
-
-        if (!mUseFingerPrint) {
-            mFingerprintButton.visibility = View.GONE
-        }
-
-        mRootView = view
-        renderByMode(mode)
+        titleView = view.findViewById(R.id.title_text_view)
         return view
     }
 
-    override fun onStart() {
-        if (!mIsCreateMode &&
-            mUseFingerPrint &&
-            isAutoShowFingerprint &&
-            FingerprintHelper.isFingerprintAvailable(requireContext())
-        ) {
-            mOnFingerprintClickListener.onClick(mFingerprintButton)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        initKeyViews(view)
+        renderByMode()
+
+        with(viewModel) {
+            nextButtonEnabledLiveData.observe(viewLifecycleOwner) {
+                button_next.isEnabled = it
+                button_next.isActivated = it
+            }
+
+            addOrRemoveDotLiveData.observe(viewLifecycleOwner) { add ->
+                if (add) {
+                    mCodeView.addDot()
+                } else {
+                    mCodeView.deleteDot()
+                }
+            }
+
+            titleLiveData.observe(viewLifecycleOwner) {
+                titleView.text = it
+            }
+
+            codeLiveData.observe(viewLifecycleOwner) {
+                if (it.isEmpty()) {
+                    mCodeView.clearCode()
+                }
+
+                configureButtons(it.length)
+            }
+            finishLiveData.observe(viewLifecycleOwner) {
+                activity?.finish()
+            }
+            showMainActivityLiveData.observe(viewLifecycleOwner) {
+                activity?.let { showMainActivity(it) }
+            }
+
+            wrongCodeLiveData.observe(viewLifecycleOwner) {
+                showWrongPinMessage()
+                errorAction()
+            }
         }
-        super.onStart()
     }
 
-    private fun renderByMode(mode: Mode) {
-        titleView = mRootView!!.findViewById(R.id.title_text_view)
-        titleView.text = getTitleText()
-
-        if (!mUseFingerPrint) {
+    private fun renderByMode() {
+        if (viewModel.isCreateMode()) {
             mFingerprintButton.visibility = View.GONE
-            mDeleteButton.visibility = View.VISIBLE
-        }
-
-        mIsCreateMode = mode == Mode.CREATE ||
-                mode == Mode.CHANGE_CREATE
-
-        if (mIsCreateMode) {
-            mFingerprintButton.visibility = View.GONE
-            mNextButton.setOnClickListener(mOnNextButtonClickListener)
-            mNextButton.isEnabled = true
+            button_next.setOnClickListener(mOnNextButtonClickListener)
+            button_next.isEnabled = true
+            button_next.visible()
         } else {
-            mNextButton.setOnClickListener(null)
-            mNextButton.invisible()
-        }
-
-        mCodeView.setCodeLength(codeLength)
-    }
-
-    private fun getTitleText(): String {
-        return when (mode) {
-            Mode.CREATE -> titleCREATE
-            Mode.AUTH -> titleAUTH
-            Mode.CHANGE -> titleCHANGE
-            Mode.CHANGE_CREATE -> titleCREATE
+            button_next.setOnClickListener(null)
+            button_next.gone()
         }
     }
 
@@ -165,63 +143,46 @@ class LockScreenFragment : Fragment() {
         }
     }
 
-    private val mOnKeyClickListener =
-        View.OnClickListener { v ->
-            if (v is TextView) {
-                val string = v.text.toString()
-                if (string.length != 1) {
-                    return@OnClickListener
-                }
-                val codeLength = mCodeView.input(string)
-                configureButtons(codeLength)
-            }
+    private val mOnKeyClickListener = { v: View ->
+        if (v is TextView) {
+            val string = v.text.toString()
+            viewModel.input(string)
         }
-
-    private val mOnDeleteButtonClickListener =
-        View.OnClickListener {
-            val codeLength = mCodeView.delete()
-            configureButtons(codeLength)
-        }
-
-    private val mOnDeleteButtonOnLongClickListener =
-        OnLongClickListener {
-            mCodeView.clearCode()
-            configureButtons(0)
-            true
-        }
-
-    private val mOnFingerprintClickListener =
-        View.OnClickListener {
-            if (!FingerprintHelper.isFingerprintsExists(requireContext())) {
-                FingerprintHelper.showNoFingerprintDialog(requireContext())
-                return@OnClickListener
-            }
-
-            val fragment = PFFingerprintAuthDialogFragment()
-            fragment.show(
-                parentFragmentManager,
-                "FINGERPRINT_DIALOG_FRAGMENT_TAG"
-            )
-
-            fragment.setAuthListener(object :
-                PFFingerprintAuthListener {
-                override fun onAuthenticated() {
-                    onFingerprintSuccessful()
-                    fragment.dismiss()
-                }
-
-                override fun onError() {
-                    onFingerprintLoginFailed()
-                }
-            })
-        }
-
-    private fun onFingerprintSuccessful() {
-
     }
 
-    private fun onFingerprintLoginFailed() {
+    private val mOnDeleteButtonClickListener = { v: View ->
+        viewModel.codeDelete()
+    }
 
+    private val mOnDeleteButtonOnLongClickListener = { v: View ->
+        mCodeView.clearCode()
+        viewModel.clearCode()
+        true
+    }
+
+    private val mOnFingerprintClickListener = { v: View ->
+//        if (!FingerprintHelper.isFingerprintsExists(requireContext())) {
+//            FingerprintHelper.showNoFingerprintDialog(requireContext())
+////            return
+//        }
+//
+//        val fragment = PFFingerprintAuthDialogFragment()
+//        fragment.show(
+//            parentFragmentManager,
+//            "FINGERPRINT_DIALOG_FRAGMENT_TAG"
+//        )
+//
+//        fragment.setAuthListener(object :
+//            PFFingerprintAuthListener {
+//            override fun onAuthenticated() {
+//                onFingerprintSuccessful()
+//                fragment.dismiss()
+//            }
+//
+//            override fun onError() {
+//                onFingerprintLoginFailed()
+//            }
+//        })
     }
 
     private fun configureButtons(codeLength: Int) {
@@ -229,104 +190,23 @@ class LockScreenFragment : Fragment() {
             mFingerprintButton.visibility = View.GONE
             mDeleteButton.visibility = View.VISIBLE
             mDeleteButton.isEnabled = true
-            return
-        }
-
-        if (mUseFingerPrint &&
-            FingerprintHelper.isFingerprintAvailable(requireContext())
-        ) {
-            mFingerprintButton.visibility = View.VISIBLE
         } else {
-            mFingerprintButton.visibility = View.GONE
-            mDeleteButton.visibility = View.VISIBLE
-        }
-
-        mDeleteButton.isEnabled = false
-    }
-
-    private val mCodeListener: OnPFCodeListener = object : OnPFCodeListener {
-        override fun onCodeCompleted(code: String) {
-            mCode = code
-
-            if (mIsCreateMode) {
-                mNextButton.isEnabled = true
-                return
-            }
-
-            val isCorrect = pinPreferences.checkPin(context!!, mCode)
-
-            if (isCorrect) {
-                onCodeInputSuccessful()
-            } else {
-                onPinLoginFailed()
-                showWrongPinMessage()
-                mCodeView.clearCode()
-                errorAction()
-            }
-        }
-
-        override fun onCodeNotCompleted(code: String) {
-            if (mIsCreateMode) {
-                mNextButton.isEnabled = false
-                return
-            }
+            mDeleteButton.isEnabled = false
         }
     }
 
-    private fun showWrongPinMessage() {
+    fun showWrongPinMessage() {
         titleView.text = "Wrong pin, please renter."
     }
 
-    fun onPinLoginFailed() {
-
-    }
-
-    data class State(
-        val codeLength: Int
-    )
-
-    data class ViewState(
-        val deleteEnabled: Boolean,
-        val nextEnabled: Boolean
-    )
-
-    fun renderState(state: State): ViewState {
-        return ViewState(true, true)
-    }
-
-    private val mOnNextButtonClickListener =
-        View.OnClickListener {
-            if (isNewCodeValidation &&
-                TextUtils.isEmpty(mCodeValidation)
-            ) {
-                mCodeValidation = mCode
-                cleanCode()
-                titleView.text = "Please input code again"
-                return@OnClickListener
-            }
-            if (isNewCodeValidation && !TextUtils.isEmpty(
-                    mCodeValidation
-                ) && mCode != mCodeValidation
-            ) {
-                onNewCodeValidationFailed()
-                titleView.text = getTitleText()
-                cleanCode()
-                return@OnClickListener
-            }
-            mCodeValidation = ""
-            pinPreferences.savePin(requireContext(), mCode)
-            onCodeCreated(mCode)
-        }
-
-    private fun cleanCode() {
-        mCode = ""
-        mCodeView.clearCode()
+    private val mOnNextButtonClickListener = { v: View ->
+        viewModel.onNextClick()
     }
 
     private fun errorAction() {
-        val v =
-            requireContext().getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-        v.vibrate(400)
+//        val v =
+//            requireContext().getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+//        v.vibrate(400)
 
 //        VibrationEffect.createOneShot(400, VibrationEffect.DEFAULT_AMPLITUDE)
         val animShake = AnimationUtils
@@ -343,36 +223,5 @@ class LockScreenFragment : Fragment() {
         val intent = Intent(activity, MainActivity::class.java)
         activity.startActivity(intent)
         activity.finish()
-    }
-
-    private fun onCodeCreated(code: String) {
-        Toast.makeText(requireContext(), "Code created", Toast.LENGTH_SHORT).show()
-        if (mode == Mode.CHANGE) {
-            // mode create
-            activity?.finish()
-        } else {
-            activity?.let { showMainActivity(it) }
-        }
-    }
-
-    fun onCodeInputSuccessful() {
-        when (mode) {
-            Mode.CREATE -> {
-
-            }
-            Mode.AUTH -> {
-                activity?.let { showMainActivity(it) }
-            }
-            Mode.CHANGE -> {
-                renderByMode(Mode.CHANGE_CREATE)
-            }
-            Mode.CHANGE_CREATE -> {
-                activity?.finish()
-            }
-        }
-    }
-
-    fun onNewCodeValidationFailed() {
-
     }
 }

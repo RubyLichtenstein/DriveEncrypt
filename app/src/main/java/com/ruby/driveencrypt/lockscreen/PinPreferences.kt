@@ -1,4 +1,4 @@
-package com.beautycoder.pflockscreen
+package com.ruby.driveencrypt.lockscreen
 
 import android.content.Context
 

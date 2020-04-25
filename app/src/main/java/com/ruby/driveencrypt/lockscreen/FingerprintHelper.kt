@@ -20,15 +20,15 @@ object FingerprintHelper {
     }
 
     fun showNoFingerprintDialog(context: Context) {
-        AlertDialog.Builder(context)
-            .setTitle(R.string.no_fingerprints_title_pf)
-            .setMessage(R.string.no_fingerprints_message_pf)
-            .setCancelable(true)
-            .setNegativeButton(R.string.cancel_pf, null)
-            .setPositiveButton(R.string.settings_pf) { dialog, which ->
-                context.startActivity(
-                    Intent(Settings.ACTION_SECURITY_SETTINGS)
-                )
-            }.create().show()
+//        AlertDialog.Builder(context)
+//            .setTitle(R.string.no_fingerprints_title_pf)
+//            .setMessage(R.string.no_fingerprints_message_pf)
+//            .setCancelable(true)
+//            .setNegativeButton(R.string.cancel_pf, null)
+//            .setPositiveButton(R.string.settings_pf) { dialog, which ->
+//                context.startActivity(
+//                    Intent(Settings.ACTION_SECURITY_SETTINGS)
+//                )
+//            }.create().show()
     }
 }

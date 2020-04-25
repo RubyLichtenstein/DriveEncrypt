@@ -16,13 +16,14 @@ fun animateAlpha(view: View, value: Float, endAction: Runnable) {
 fun animateScale(
     view: View,
     scale: Float,
+    duration: Long = 200,
     endAction: (() -> Unit)? = null
 ) {
     view
         .animate()
         .scaleX(scale)
         .scaleY(scale)
-        .setDuration(200)
+        .setDuration(duration)
         .withEndAction {
             view.scaleX = scale
             view.scaleY = scale
@@ -30,6 +31,7 @@ fun animateScale(
         }
         .start()
 }
+
 fun createCircularReveal(
     myView: View,
     anchor: View
