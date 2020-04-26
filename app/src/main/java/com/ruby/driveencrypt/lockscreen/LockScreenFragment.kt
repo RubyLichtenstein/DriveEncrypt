@@ -46,7 +46,7 @@ class LockScreenFragment : Fragment() {
         super.onCreate(savedInstanceState)
         arguments?.let {
             val change = it.getBoolean(ARG_CHANGE)
-            viewModel.changeCodeMode = change
+            viewModel.init(change)
         }
     }
 
@@ -73,7 +73,6 @@ class LockScreenFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         initKeyViews(view)
-        renderByMode()
 
         with(viewModel) {
             nextButtonEnabledLiveData.observe(viewLifecycleOwner) {
@@ -89,20 +88,22 @@ class LockScreenFragment : Fragment() {
                 }
             }
 
-            titleLiveData.observe(viewLifecycleOwner) {
-                titleView.text = it
-            }
+            stateLiveData.observe(viewLifecycleOwner) {
+                handleState(it)
 
-            codeLiveData.observe(viewLifecycleOwner) {
-                if (it.isEmpty()) {
+                titleView.text = it.title
+
+                if (it.code.isEmpty()) {
                     mCodeView.clearCode()
                 }
 
-                configureButtons(it.length)
+                configureButtons(it.code.length)
             }
+
             finishLiveData.observe(viewLifecycleOwner) {
                 activity?.finish()
             }
+
             showMainActivityLiveData.observe(viewLifecycleOwner) {
                 activity?.let { showMainActivity(it) }
             }
@@ -114,8 +115,8 @@ class LockScreenFragment : Fragment() {
         }
     }
 
-    private fun renderByMode() {
-        if (viewModel.isCreateMode()) {
+    private fun handleState(state: LockScreenViewModel.State) {
+        if (state.mode == CREATE) {
             mFingerprintButton.visibility = View.GONE
             button_next.setOnClickListener(mOnNextButtonClickListener)
             button_next.isEnabled = true
@@ -146,7 +147,7 @@ class LockScreenFragment : Fragment() {
     private val mOnKeyClickListener = { v: View ->
         if (v is TextView) {
             val string = v.text.toString()
-            viewModel.input(string)
+            viewModel.onNumberClick(string)
         }
     }
 

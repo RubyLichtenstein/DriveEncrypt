@@ -6,17 +6,13 @@ import androidx.lifecycle.MutableLiveData
 
 interface ILockScreenViewModel {
     fun onNextClick()
-    fun onNumberClick()
+    fun onNumberClick(number: String)
+
+    fun onCodeCompleted()
     fun onCodeValidationFailed()
     fun onCodeCreated()
-    fun onLoginFailed()
-    fun onCodeCompleted()
-    fun isCreateMode(): Boolean
-}
-
-interface IView {
-    fun setTitleText()
-    fun isNextActive()
+    fun onCodeFailed()
+    fun clearCode()
 }
 
 class LockScreenViewModel(application: Application) : AndroidViewModel(application),
@@ -28,16 +24,44 @@ class LockScreenViewModel(application: Application) : AndroidViewModel(applicati
 
     private val pinPreferences = PinPreferences()
     private val codeLength = 4
-    private var mCodeValidation: String? = ""
 
-    val codeLiveData = MutableLiveData("")
-    val modeLiveData = MutableLiveData<Mode>()
+    fun init(changeCode: Boolean) {
+        val pinExist = pinPreferences.isPinExist(getApplication())
+
+        val mode = if (pinExist)
+            Mode.AUTH
+        else
+            Mode.CREATE
+
+        val title = getTitleText(
+            mode,
+            changeCode
+        )
+
+        stateLiveData.value = State(
+            mode = mode,
+            changeCode = changeCode,
+            code = "",
+            title = title,
+            codeValidation = ""
+        )
+    }
+
+    val stateLiveData = MutableLiveData<State>()
+
     val finishLiveData = MutableLiveData<Unit>()
     val showMainActivityLiveData = MutableLiveData<Unit>()
-    val titleLiveData = MutableLiveData<String>()
     val wrongCodeLiveData = MutableLiveData<Unit>()
-    val nextButtonEnabledLiveData = MutableLiveData<Boolean>(false)
+    val nextButtonEnabledLiveData = MutableLiveData(false)
     val addOrRemoveDotLiveData = MutableLiveData<Boolean>()
+
+    data class State(
+        val mode: Mode,
+        val changeCode: Boolean,
+        val code: String,
+        val codeValidation: String,
+        val title: String
+    )
 
     enum class Mode {
         CREATE,
@@ -45,41 +69,46 @@ class LockScreenViewModel(application: Application) : AndroidViewModel(applicati
         VALIDATION
     }
 
-    data class ViewState(
-        val deleteEnabled: Boolean,
-        val nextEnabled: Boolean
-    )
+    private fun getTitleText(
+        mode: Mode,
+        changeCode: Boolean
+    ): String {
+        return when (mode) {
+            Mode.CREATE -> if (changeCode)
+                titleChange
+            else
+                titleCreate
 
-    init {
-        val pinExist = pinPreferences.isPinExist(getApplication())
-        modeLiveData.value = if (pinExist)
-            Mode.AUTH
-        else
-            Mode.CREATE
-
-        titleLiveData.value = getTitleText()
-    }
-
-    private fun getTitleText(): String {
-        return when (modeLiveData.value) {
-            Mode.CREATE -> if (changeCodeMode) titleChange else titleCreate
             Mode.AUTH -> titleAuth
             else -> ""
         }
     }
-
-    var changeCodeMode = false
 
     private fun onCodeCreated(code: String) {
 //        Toast.makeText(requireContext(), "Code created", Toast.LENGTH_SHORT).show()
         closeLockScreen()
     }
 
+    fun withState(block: State.() -> Unit) {
+        stateLiveData.value?.let {
+            block(it)
+        }
+    }
+
+    fun newState(block: State.() -> State) {
+        stateLiveData.value?.let {
+            val newState = block(it)
+            stateLiveData.value = newState
+        }
+    }
+
     private fun closeLockScreen() {
-        if (changeCodeMode) {
-            finishLiveData.value = Unit
-        } else {
-            showMainActivityLiveData.value = Unit
+        withState {
+            if (changeCode) {
+                finishLiveData.value = Unit
+            } else {
+                showMainActivityLiveData.value = Unit
+            }
         }
     }
 
@@ -91,53 +120,60 @@ class LockScreenViewModel(application: Application) : AndroidViewModel(applicati
             pinPreferences.savePin(getApplication(), code)
             onCodeCreated(code)
         } else {
-            titleLiveData.value = "Code validation failed."
-            clearCode()
+            newState {
+                copy(
+                    title = "Code validation failed.",
+                    code = ""
+                )
+            }
         }
     }
 
-    fun clearCode() {
-        codeLiveData.value = ""
-    }
-
     private fun setCode(code: String) {
-        codeLiveData.value = code
+        newState {
+            copy(code = code)
+        }
+
         if (code.length == codeLength) {
-            onCodeCompleted(code)
+            onCodeCompleted()
         }
     }
 
     fun codeDelete() {
-        val currentCode = codeLiveData.value
-        if (currentCode.isNullOrEmpty()) return
-        setCode(currentCode.dropLast(1))
-        addOrRemoveDotLiveData.value = false
-    }
-
-    fun input(number: String) {
-        val currentCode = codeLiveData.value
-        if (currentCode == null || currentCode.length == codeLength) return
-        setCode(currentCode + number)
-        addOrRemoveDotLiveData.value = true
-    }
-
-    override fun onNextClick() {
-        if (modeLiveData.value === Mode.VALIDATION) {
-            validateCode(
-                codeLiveData.value!!,
-                mCodeValidation!!
-            )
-        } else {
-            modeLiveData.value = Mode.VALIDATION
-            mCodeValidation = codeLiveData.value
-            codeLiveData.value = ""
-            titleLiveData.value = "Please input code again"
-            clearCode()
+        withState {
+            if (code.isNotEmpty()) {
+                setCode(code.dropLast(1))
+                addOrRemoveDotLiveData.value = false
+            }
         }
     }
 
-    override fun onNumberClick() {
-        TODO("Not yet implemented")
+    override fun onNumberClick(number: String) {
+        withState {
+            if (code.length == codeLength) return@withState
+            setCode(code + number)
+            addOrRemoveDotLiveData.value = true
+        }
+    }
+
+    override fun onNextClick() {
+        withState {
+            if (mode === Mode.VALIDATION) {
+                validateCode(
+                    code,
+                    codeValidation
+                )
+            } else {
+                newState {
+                    copy(
+                        mode = Mode.VALIDATION,
+                        codeValidation = this.code,
+                        code = "",
+                        title = "Please input code again"
+                    )
+                }
+            }
+        }
     }
 
     override fun onCodeValidationFailed() {
@@ -148,35 +184,38 @@ class LockScreenViewModel(application: Application) : AndroidViewModel(applicati
         TODO("Not yet implemented")
     }
 
-    override fun onLoginFailed() {
+    override fun onCodeFailed() {
         TODO("Not yet implemented")
     }
 
-    override fun onCodeCompleted() {
-
+    override fun clearCode() {
+        newState {
+            copy(code = "")
+        }
     }
 
-    private fun onCodeCompleted(code: String) {
-        when (modeLiveData.value) {
-            Mode.CREATE -> {
-                nextButtonEnabledLiveData.value = true
-            }
-
-            Mode.AUTH -> {
-                if (isCodeCorrect(code)) {
-                    onCodeInputSuccessful()
-                } else {
-                    wrongCodeLiveData.value = Unit
-                    clearCode()
+    override fun onCodeCompleted() {
+        withState {
+            when (mode) {
+                Mode.CREATE -> {
+                    nextButtonEnabledLiveData.value = true
                 }
-            }
-            Mode.VALIDATION -> {
-                validateCode(
-                    codeLiveData.value!!,
-                    mCodeValidation!!
-                )
-            }
-            null -> {
+                Mode.AUTH -> {
+                    if (isCodeCorrect(code)) {
+                        onCodeInputSuccessful()
+                    } else {
+                        wrongCodeLiveData.value = Unit
+                        newState {
+                            copy(code = "")
+                        }
+                    }
+                }
+                Mode.VALIDATION -> {
+                    validateCode(
+                        code,
+                        codeValidation
+                    )
+                }
             }
         }
     }
@@ -190,10 +229,5 @@ class LockScreenViewModel(application: Application) : AndroidViewModel(applicati
             getApplication(),
             code
         )
-    }
-
-    override fun isCreateMode(): Boolean {
-        val value = modeLiveData.value
-        return value == Mode.CREATE
     }
 }

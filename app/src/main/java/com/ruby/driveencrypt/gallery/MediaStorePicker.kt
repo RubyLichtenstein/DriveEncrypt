@@ -20,7 +20,7 @@ import kotlin.collections.ArrayList
 val REQUEST_PICK_IMAGES = 10
 val REQUEST_PICK_VIDEO = 20
 
-class MediaStorePicker {
+object MediaStorePicker {
 
     fun selectImages(activity: Activity) {
         val pickPhoto = Intent(

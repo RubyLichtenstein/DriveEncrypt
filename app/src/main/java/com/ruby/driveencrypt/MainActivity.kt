@@ -19,6 +19,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.ruby.driveencrypt.files.RemoteFilesManager
 import com.ruby.driveencrypt.gallery.*
 import com.ruby.driveencrypt.gallery.grid.GalleryGridFragment
@@ -34,19 +36,18 @@ import kotlin.math.hypot
 
 class MainActivity : AppCompatActivity() {
 
-    private val imageGalleryHelper = MediaStorePicker()
+    //    private val imageGalleryHelper = MediaStorePicker()
     private var remoteFilesManager: RemoteFilesManager? = null
     private lateinit var googleSignInHelper: GoogleSignInHelper
     private var isFabMenuVisable = false
     private val viewModel: GalleryViewModel by viewModels()
-
-    private val mediaCapture = MediaCapture()
+    private val bottomSheetFragment = BottomSheetFragment()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         window.addFlags(FLAG_TRANSLUCENT_STATUS or FLAG_TRANSLUCENT_NAVIGATION)
-        setSupportActionBar(grid_toolbar)
+        setSupportActionBar(bottom_app_bar)
 
         viewModel.permissionNeededForDelete.observe(this, Observer { intentSender ->
             intentSender?.let {
@@ -82,86 +83,32 @@ class MainActivity : AppCompatActivity() {
         remoteFilesManager?.initFolderId(this)
 
         fab_menu.setOnClickListener {
-            handleFabMenuClick()
-        }
-
-        fab_import_videos.setOnClickListener {
-            imageGalleryHelper.selectVideos(this)
-        }
-
-        fab_import_photos.setOnClickListener {
-            imageGalleryHelper.selectImages(this)
-        }
-
-        fab_take_photo.setOnClickListener {
-            checkCameraPermission {
-                mediaCapture.dispatchTakePictureIntent(this)
-            }
-        }
-
-        fab_take_video.setOnClickListener {
-            checkCameraPermission {
-                mediaCapture.dispatchTakeVideoIntent(this)
-            }
-        }
-
-        viewModel.isInSelectionModeLiveData.observe(this, Observer {
-            grid_toolbar.visibility = if (it) {
-                View.GONE
-            } else {
-                View.VISIBLE
-            }
-        })
-
-        user_dialog.setOnClickListener {
-            UserDialog()
-                .show(supportFragmentManager, "")
+            bottomSheetFragment.show(supportFragmentManager, bottomSheetFragment.tag)
         }
     }
 
     private fun handleFabMenuClick() {
         if (isFabMenuVisable) {
-            grid_toolbar.visibility = View.VISIBLE
-
-            main_background.visibility = View.GONE
-            fabs_menu.visibility = View.GONE
             fab_menu.setImageResource(R.drawable.ic_add_black_24dp)
         } else {
-            grid_toolbar.visibility = View.GONE
-
-            createCircularReveal(main_background, fab_menu)
-            fabs_menu.visibility = View.VISIBLE
             fab_menu.setImageResource(R.drawable.ic_clear_black_24dp)
         }
 
         isFabMenuVisable = !isFabMenuVisable
     }
 
-    private fun checkCameraPermission(onHasPermissions: () -> Unit) {
-        val galleryPermissions = arrayOf(
-            Manifest.permission.CAMERA
-        )
-
-        if (EasyPermissions.hasPermissions(this, *galleryPermissions)) {
-            onHasPermissions()
-        } else {
-            EasyPermissions.requestPermissions(
-                this,
-                "Access for storage",
-                101,
-                *galleryPermissions
-            )
-        }
-    }
-
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
+        menuInflater.inflate(R.menu.bottomappbar_menu, menu)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id: Int = item.itemId
+        if (id == R.id.app_bar_account) {
+            UserDialog().show(supportFragmentManager, "")
+        }
+
         if (id == R.id.password_settings) {
             val intent = Intent(this, LockScreenSettingsActivity::class.java)
             startActivity(intent)
@@ -216,6 +163,7 @@ class MainActivity : AppCompatActivity() {
         if (resultCode == Activity.RESULT_CANCELED) return
 
         if (isFabMenuVisable) {
+            bottomSheetFragment.dismiss()
             handleFabMenuClick()
         }
 
@@ -230,7 +178,7 @@ class MainActivity : AppCompatActivity() {
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {
                 REQUEST_PICK_IMAGES, REQUEST_PICK_VIDEO -> if (intent != null) {
-                    imageGalleryHelper.onResultFromGallery(
+                    MediaStorePicker.onResultFromGallery(
                         intent
                     ) { paths ->
 //                        deleteFiles(paths)
@@ -240,7 +188,11 @@ class MainActivity : AppCompatActivity() {
             }
 
             if (requestCode == REQUEST_TAKE_PHOTO) {
-                viewModel.handleImagePath(this, listOf(mediaCapture.currentPhotoUri!!))
+                val currentPhotoUri = MediaCapture.currentPhotoUri
+                if (currentPhotoUri != null) {
+                    viewModel.handleImagePath(this, listOf(currentPhotoUri))
+                    MediaCapture.currentPhotoUri = null
+                }
             }
 
             if (requestCode == REQUEST_VIDEO_CAPTURE) {
@@ -253,7 +205,7 @@ class MainActivity : AppCompatActivity() {
     private fun deleteFiles(paths: List<Uri>) {
         paths.forEach { uri ->
             GlobalScope.launch {
-                val res = imageGalleryHelper.queryImages(contentResolver, uri)
+                val res = MediaStorePicker.queryImages(contentResolver, uri)
                 res.forEach {
                     viewModel.performDeleteImage(
                         contentResolver,

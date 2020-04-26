@@ -5,63 +5,53 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!--    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout-->
-    <!--        android:id="@+id/swipe_refresh"-->
+    <FrameLayout
+        android:id="@+id/main_fragment_holder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </FrameLayout>
+
+    <com.google.android.material.bottomappbar.BottomAppBar
+        android:id="@+id/bottom_app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        app:backgroundTint="@color/colorPrimary"
+        app:fabAlignmentMode="end"
+        app:hideOnScroll="true"
+        app:layout_scrollFlags="scroll|enterAlways" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_menu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_add_black_24dp"
+        app:layout_anchor="@id/bottom_app_bar" />
+
+    <!--    <com.google.android.material.appbar.AppBarLayout-->
     <!--        android:layout_width="match_parent"-->
-    <!--        android:layout_height="match_parent">-->
+    <!--        android:layout_height="wrap_content">-->
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".MainActivity">
+    <!--        <androidx.appcompat.widget.Toolbar-->
+    <!--            android:id="@+id/grid_toolbar"-->
+    <!--            android:layout_width="match_parent"-->
+    <!--            android:layout_height="wrap_content"-->
+    <!--            android:background="@android:color/transparent"-->
+    <!--            android:paddingTop="24dp"-->
+    <!--            android:theme="@style/AppTheme"-->
+    <!--            app:layout_scrollFlags="scroll|enterAlways">-->
 
-        <FrameLayout
-            android:id="@+id/main_fragment_holder"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+    <!--            <ImageButton-->
+    <!--                android:id="@+id/user_dialog"-->
+    <!--                android:layout_width="wrap_content"-->
+    <!--                android:layout_height="match_parent"-->
+    <!--                android:layout_gravity="start"-->
+    <!--                android:layout_margin="16dp"-->
+    <!--                android:background="@android:color/transparent"-->
+    <!--                android:src="@drawable/ic_account_circle_black_24dp"-->
+    <!--                android:textColor="@color/primaryTextColor" />-->
 
-        </FrameLayout>
-
-        <FrameLayout
-            android:id="@+id/main_background"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:alpha="0.95"
-            android:background="@color/primaryColor"
-            android:clickable="true"
-            android:focusable="true"
-            android:visibility="gone">
-
-        </FrameLayout>
-
-        <include layout="@layout/main_fabs" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <!--    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>-->
-
-    <com.google.android.material.appbar.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/grid_toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/primaryColor"
-            android:paddingTop="24dp"
-            android:theme="@style/AppTheme"
-            app:layout_scrollFlags="scroll|enterAlways">
-
-            <ImageButton
-                android:id="@+id/user_dialog"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_gravity="start"
-                android:layout_margin="16dp"
-                android:background="@android:color/transparent"
-                android:src="@drawable/ic_account_circle_black_24dp"
-                android:textColor="@color/primaryTextColor" />
-
-        </androidx.appcompat.widget.Toolbar>
-    </com.google.android.material.appbar.AppBarLayout>
+    <!--        </androidx.appcompat.widget.Toolbar>-->
+    <!--    </com.google.android.material.appbar.AppBarLayout>-->
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

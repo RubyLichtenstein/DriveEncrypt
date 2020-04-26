@@ -15,9 +15,9 @@ import java.util.*
 val REQUEST_TAKE_PHOTO = 3
 val REQUEST_VIDEO_CAPTURE = 4
 
-class MediaCapture {
+object MediaCapture {
 
-    var currentPhotoPath: String? = null
+    // todo super ugly
     var currentPhotoUri: Uri? = null
 
     @Throws(IOException::class)
@@ -30,10 +30,7 @@ class MediaCapture {
             "JPEG_${timeStamp}_", /* prefix */
             ".jpg", /* suffix */
             storageDir /* directory */
-        ).apply {
-            // Save a file: path for use with ACTION_VIEW intents
-            currentPhotoPath = absolutePath
-        }
+        )
     }
 
     fun dispatchTakeVideoIntent(activity: Activity) {

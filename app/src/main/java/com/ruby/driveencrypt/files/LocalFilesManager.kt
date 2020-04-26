@@ -19,38 +19,21 @@ import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
 object LocalFilesManager {
-    private val mExecutor: Executor =
-        Executors.newCachedThreadPool()
-
-    private const val THUMBNAIL_PREFIX = "thumbnail_"
-
-    private fun <V> execute(call: () -> V): Task<V> {
-        return Tasks.call(mExecutor, Callable {
-            // todo try catch
-//            try {
-            call()
-//            } catch (e: IOException) {
-//                Log.e("TAG", "execute", e)
-//                null
-//            }
-        })
-    }
 
     fun getLocalFilesPaths(context: Context) =
         filesDirListFiles(context)
             .map { it.path }
-            .filterNot { it.contains(THUMBNAIL_PREFIX) }
             .sorted()
 
     fun getLocalFilesNames(context: Context) =
         filesDirListFiles(context)
             .map { it.name }
-            .filterNot { it.contains(THUMBNAIL_PREFIX) }
             .sorted()
 
     suspend fun saveLocalFiles(context: Context, uri: Uri) {
         withContext(Dispatchers.IO) {
             with(context.contentResolver) {
+                // todo wrap with try catch
                 openFileDescriptor(
                     uri,
                     "r",

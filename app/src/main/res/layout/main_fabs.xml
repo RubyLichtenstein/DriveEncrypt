@@ -1,136 +1,125 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+    android:animateLayoutChanges="true"
+    android:gravity="center_vertical|end"
+    android:orientation="vertical"
+    android:paddingTop="4dp"
+    android:paddingBottom="4dp"
+    app:layout_constraintBottom_toTopOf="@+id/fab_menu"
+    app:layout_constraintEnd_toEndOf="@+id/fab_menu"
+    tools:visibility="visible">
 
     <LinearLayout
-        android:id="@+id/fabs_menu"
-        android:layout_width="wrap_content"
+        android:id="@+id/fab_import_videos"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="4dp"
-        android:animateLayoutChanges="true"
-        android:gravity="center_vertical|end"
-        android:orientation="vertical"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@+id/fab_menu"
-        app:layout_constraintEnd_toEndOf="@+id/fab_menu"
-        tools:visibility="visible">
+        android:background="?attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
-        <LinearLayout
+        <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:gravity="center"
-            android:orientation="horizontal">
+            android:padding="16dp"
+            android:src="@drawable/ic_videocam_black_24dp">
 
-            <TextView
-                style="@style/MainFabsText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="import videos" />
+        </ImageView>
 
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/fab_import_videos"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_videocam_black_24dp"
-                app:fabSize="mini"
-                app:layout_constraintBottom_toTopOf="@+id/fab_menu"
-                app:layout_constraintEnd_toEndOf="@+id/fab_menu"
-                app:layout_constraintStart_toStartOf="@+id/fab_menu"
-                app:layout_scrollFlags="scroll|enterAlways" />
-
-        </LinearLayout>
-
-        <LinearLayout
+        <TextView
+            style="@style/MainFabsText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:gravity="center"
-            android:orientation="horizontal">
-
-            <TextView
-                style="@style/MainFabsText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="import photos" />
-
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/fab_import_photos"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_photo_black_24dp"
-                app:fabSize="mini"
-                app:layout_constraintBottom_toTopOf="@+id/fab_menu"
-                app:layout_constraintEnd_toEndOf="@+id/fab_menu"
-                app:layout_constraintStart_toStartOf="@+id/fab_menu"
-                app:layout_scrollFlags="scroll|enterAlways" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:gravity="center"
-            android:orientation="horizontal">
-
-            <TextView
-                style="@style/MainFabsText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="take photo" />
-
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/fab_take_photo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_photo_camera_black_24dp"
-                app:fabSize="mini"
-                app:layout_constraintBottom_toTopOf="@+id/fab_menu"
-                app:layout_constraintEnd_toEndOf="@+id/fab_menu"
-                app:layout_constraintStart_toStartOf="@+id/fab_menu"
-                app:layout_scrollFlags="scroll|enterAlways" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:gravity="center"
-            android:orientation="horizontal">
-
-            <TextView
-                style="@style/MainFabsText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="take video" />
-
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/fab_take_video"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_play_circle_filled_black_24dp"
-                app:fabSize="mini"
-                app:layout_constraintBottom_toTopOf="@+id/fab_menu"
-                app:layout_constraintEnd_toEndOf="@+id/fab_menu"
-                app:layout_constraintStart_toStartOf="@+id/fab_menu"
-                app:layout_scrollFlags="scroll|enterAlways" />
-
-        </LinearLayout>
+            android:text="import videos" />
 
     </LinearLayout>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_menu"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/fab_import_photos"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="64dp"
-        android:src="@drawable/ic_add_black_24dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_scrollFlags="scroll|enterAlways" />
+        android:background="?attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:src="@drawable/ic_photo_black_24dp">
+
+        </ImageView>
+
+        <TextView
+            style="@style/MainFabsText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="import photos" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/fab_take_photo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:src="@drawable/ic_photo_camera_black_24dp">
+
+        </ImageView>
+
+        <TextView
+            style="@style/MainFabsText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="take photo" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/fab_take_video"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:src="@drawable/ic_play_circle_filled_black_24dp">
+
+        </ImageView>
+
+        <TextView
+            style="@style/MainFabsText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="take video" />
+
+
+    </LinearLayout>
+</LinearLayout>
+
+    <!--    <com.google.android.material.floatingactionbutton.FloatingActionButton-->
+    <!--        android:id="@+id/fab_menu"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_marginEnd="16dp"-->
+    <!--        android:layout_marginBottom="64dp"-->
+    <!--        android:src="@drawable/ic_add_black_24dp"-->
+    <!--        android:visibility="gone"-->
+    <!--        app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:layout_scrollFlags="scroll|enterAlways" />-->
+

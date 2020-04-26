@@ -1,15 +1,15 @@
-package com.ruby.driveencrypt.lockscreen
+package com.ruby.driveencrypt.lockscreen.fingerprint
 
-import android.app.AlertDialog
 import android.content.Context
-import android.content.Intent
-import android.provider.Settings
 import androidx.core.hardware.fingerprint.FingerprintManagerCompat
-import com.ruby.driveencrypt.R
 
 object FingerprintHelper {
     fun isFingerprintAvailable(context: Context) =
-        isFingerprintApiAvailable(context) && isFingerprintsExists(context)
+        isFingerprintApiAvailable(
+            context
+        ) && isFingerprintsExists(
+            context
+        )
 
     fun isFingerprintApiAvailable(context: Context): Boolean {
         return FingerprintManagerCompat.from(context).isHardwareDetected
