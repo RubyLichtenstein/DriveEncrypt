@@ -1,10 +1,12 @@
 package com.ruby.driveencrypt.gallery.grid
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+import android.transition.TransitionInflater
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.app.SharedElementCallback
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.selection.SelectionPredicates
@@ -12,14 +14,13 @@ import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.selection.StorageStrategy
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-
+import com.ruby.driveencrypt.MainActivity
 import com.ruby.driveencrypt.R
 import com.ruby.driveencrypt.files.LocalFilesManager
 import com.ruby.driveencrypt.files.RemoteFilesManager
 import com.ruby.driveencrypt.gallery.GalleryViewModel
 import com.ruby.driveencrypt.gallery.grid.selection.MyItemDetailsLookup
 import com.ruby.driveencrypt.gallery.grid.selection.MyItemKeyProvider
-import com.ruby.driveencrypt.gallery.pager.GalleryPagerActivity
 import com.ruby.driveencrypt.share.shareMultipleImage
 import kotlinx.android.synthetic.main.fragment_gallery_grid.*
 
@@ -36,12 +37,17 @@ class GalleryGridFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         remoteFilesManager = RemoteFilesManager.create(requireActivity())
-        setupViewModel(model)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        (activity as MainActivity).showBottomAppBar()
+        (activity as MainActivity).pagerMenuItems(false)
     }
 
     private fun setupViewModel(model: GalleryViewModel) {
         model.showAllLocalFiles(requireActivity())
-        model.localFilesLiveData.observe(this, Observer {
+        model.localFilesLiveData.observe(viewLifecycleOwner, Observer {
             if (it.isEmpty()) {
                 empty_state.visibility = View.VISIBLE
             } else {
@@ -57,19 +63,17 @@ class GalleryGridFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
+//        postponeEnterTransition()
         return inflater.inflate(R.layout.fragment_gallery_grid, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setupViewModel(model)
         viewGridAdapter = GalleryGridAdapter()
 
-        viewGridAdapter.onClick = { view, item ->
-            GalleryPagerActivity.startWithTransition(
-                requireActivity(),
-                item.path,
-                view
-            )
+        viewGridAdapter.onClick = { imageView, item ->
+            (activity as MainActivity).openGalleryPager(imageView, item.path)
         }
 
         val gridLayoutManager = GridLayoutManager(activity, SPAN_COUNT)
@@ -106,6 +110,11 @@ class GalleryGridFragment : Fragment() {
         })
 
         viewGridAdapter.tracker = selectionTracker
+
+        viewGridAdapter.startPostponedEnterTransition = {
+            startPostponedEnterTransition()
+        }
+
         delete_selected.setOnClickListener {
             viewGridAdapter.getSelectedItems()?.forEach {
                 LocalFilesManager.deleteLocal(it.path)
@@ -140,5 +149,34 @@ class GalleryGridFragment : Fragment() {
                 true
             )
         }
+
+        prepareTransitions()
+    }
+
+    /**
+     * Prepares the shared element transition to the pager fragment, as well as the other transitions
+     * that affect the flow.
+     */
+    private fun prepareTransitions() {
+        exitTransition = TransitionInflater.from(context)
+            .inflateTransition(R.transition.grid_exit_transition)
+
+        // A similar mapping is set at the ImagePagerFragment with a setEnterSharedElementCallback.
+        setExitSharedElementCallback(
+            object : SharedElementCallback() {
+                override fun onMapSharedElements(
+                    names: List<String>,
+                    sharedElements: MutableMap<String, View>
+                ) {
+                    // Locate the ViewHolder for the clicked position.
+                    val selectedViewHolder = recyclerView
+                        .findViewHolderForAdapterPosition(MainActivity.currentPosition)
+                        ?: return
+
+                    // Map the first shared element name to the child ImageView.
+                    sharedElements[names[0]] =
+                        selectedViewHolder.itemView.findViewById(R.id.gallery_image)
+                }
+            })
     }
 }

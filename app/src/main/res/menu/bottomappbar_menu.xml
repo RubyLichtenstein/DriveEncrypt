@@ -7,4 +7,24 @@
         android:icon="@drawable/ic_account_circle_black_24dp"
         android:title="account"
         app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/pager_share"
+        android:icon="@drawable/ic_share_black_24dp"
+
+        android:title="share"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/pager_upload"
+        android:icon="@drawable/ic_cloud_upload_black_24dp"
+
+        android:title="upload"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/pager_delete"
+        android:icon="@drawable/ic_delete_black_24dp"
+        android:title="delete"
+        app:showAsAction="ifRoom" />
 </menu>

@@ -21,6 +21,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 
 class GalleryViewModel(application: Application) : AndroidViewModel(application) {
+    var currentPosition = -1
     val localFilesLiveData = MutableLiveData<List<GalleryItem>>()
     val refreshLiveData = MutableLiveData<Boolean>()
     val isInSelectionModeLiveData = MutableLiveData<Boolean>()
@@ -71,33 +72,6 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
             ?.syncStatus
 
         return galleryItem.copy(synced = status)
-    }
-
-
-    fun refreshFiles(
-        remoteFilesManager: RemoteFilesManager,
-        context: Context
-    ) {
-        showAllLocalFiles(context)
-
-        remoteFilesManager
-            .downloadNotSyncFiles()
-            .addOnSuccessListener {
-                var counter = it.size
-                it.forEach { task ->
-                    task
-                        .addOnSuccessListener {
-//                            remoteFiles.add(it)
-//                            fileAddedLiveData.value = it.path
-                        }
-                        .addOnCompleteListener {
-                            counter--
-                            if (counter == 0) {
-                                refreshLiveData.value = false
-                            }
-                        }
-                }
-            }
     }
 
     fun handleImagePath(

@@ -9,6 +9,7 @@ abstract class BaseGalleryAdapter :
     ListAdapter<GalleryItem, RecyclerView.ViewHolder>(GalleryItem.DiffCallback) {
 
     var onClick: ((View, GalleryItem) -> Unit)? = null
+    var startPostponedEnterTransition: () -> Unit = {}
 
     inner class ImageViewHolder(private val view: View) : RecyclerView.ViewHolder(view) {
         fun getItemDetails(): ItemDetailsLookup.ItemDetails<Long> =

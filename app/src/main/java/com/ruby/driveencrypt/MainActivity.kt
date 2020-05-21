@@ -7,36 +7,32 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.transition.TransitionSet
+import android.transition.Visibility
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewAnimationUtils
 import android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
 import android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.view.children
 import androidx.lifecycle.Observer
 import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.ruby.driveencrypt.files.RemoteFilesManager
 import com.ruby.driveencrypt.gallery.*
 import com.ruby.driveencrypt.gallery.grid.GalleryGridFragment
+import com.ruby.driveencrypt.gallery.pager.GalleryPagerFragment
 import com.ruby.driveencrypt.lockscreen.LockScreenSettingsActivity
+import com.ruby.driveencrypt.share.shareImage
 import com.ruby.driveencrypt.signin.GoogleSignInHelper
-import com.ruby.driveencrypt.utils.createCircularReveal
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.main_fabs.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import pub.devrel.easypermissions.EasyPermissions
-import kotlin.math.hypot
 
 class MainActivity : AppCompatActivity() {
 
-    //    private val imageGalleryHelper = MediaStorePicker()
     private var remoteFilesManager: RemoteFilesManager? = null
     private lateinit var googleSignInHelper: GoogleSignInHelper
     private var isFabMenuVisable = false
@@ -87,6 +83,53 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    var galleryPagerFragment: GalleryPagerFragment? = null
+
+    fun openGalleryPager(view: View, path: String) {
+        galleryPagerFragment = GalleryPagerFragment.newInstance(path)
+        // Exclude the clicked card from the exit transition (e.g. the card will disappear immediately
+        // instead of fading out with the rest to prevent an overlapping animation of fade and move).
+//        (fragment.exitTransition as TransitionSet).excludeTarget(
+//            view,
+//            true
+//        )
+
+//        currentPosition
+        galleryPagerFragment?.let {
+            supportFragmentManager
+                .beginTransaction()
+                .setReorderingAllowed(true)
+                .addSharedElement(view, view.transitionName)
+                .addToBackStack(null)
+                .replace(
+                    R.id.main_fragment_holder,
+                    it,
+                    GalleryPagerFragment::class.java.simpleName
+                )
+                .commit()
+            pagerMenuItems(true)
+        }
+    }
+
+    fun pagerMenuItems(isVisible: Boolean) {
+        with(bottom_app_bar.menu) {
+            findItem(R.id.app_bar_account)?.isVisible = !isVisible
+            findItem(R.id.pager_share)?.isVisible = isVisible
+            findItem(R.id.pager_upload)?.isVisible = isVisible
+            findItem(R.id.pager_delete)?.isVisible = isVisible
+        }
+    }
+
+    fun showBottomAppBar() {
+        bottom_app_bar.performShow()
+        fab_menu.show()
+    }
+
+    fun hideBottomAppBar() {
+        bottom_app_bar.performHide()
+        fab_menu.hide()
+    }
+
     private fun handleFabMenuClick() {
         if (isFabMenuVisable) {
             fab_menu.setImageResource(R.drawable.ic_add_black_24dp)
@@ -105,8 +148,16 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id: Int = item.itemId
+
         if (id == R.id.app_bar_account) {
             UserDialog().show(supportFragmentManager, "")
+        }
+
+        if (id == R.id.pager_share) {
+            galleryPagerFragment?.let {
+                val galleryItem = it.getCurrentGalleryItem()
+                shareImage(this, galleryItem.path)
+            }
         }
 
         if (id == R.id.password_settings) {
@@ -118,32 +169,12 @@ class MainActivity : AppCompatActivity() {
         val remoteFilesManager = remoteFilesManager
         if (remoteFilesManager != null) {
             if (id == R.id.upload_drive) {
-                remoteFilesManager
-                    .uploadNotSyncFiles()
-                    .addOnSuccessListener {
-                        it.onEach {
-                            it?.addOnSuccessListener {
-                                Toast.makeText(
-                                    this,
-                                    "uploaded: " + it.name,
-                                    Toast.LENGTH_LONG
-                                ).show()
-                            }
-                        }
-                    }
+                SimpleJobIntentService.upload(this)
                 return true
             }
 
             if (id == R.id.download_drive) {
-                remoteFilesManager
-                    .downloadNotSyncFiles()
-                    .addOnSuccessListener {
-                        it.onEach {
-                            it.addOnSuccessListener {
-                                viewModel.showAllLocalFiles(this)
-                            }
-                        }
-                    }
+                SimpleJobIntentService.download(this)
                 return true
             }
 
@@ -216,14 +247,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onBackPressed() {
-        if (isFabMenuVisable) {
-            handleFabMenuClick()
-        } else {
-            super.onBackPressed()
-        }
-    }
-
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
@@ -277,6 +300,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
-
+        var currentPosition = 0
     }
 }

@@ -1,13 +1,17 @@
 package com.ruby.driveencrypt.gallery.pager
 
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import com.ruby.driveencrypt.R
-import com.ruby.driveencrypt.files.LocalFilesManager
 import com.ruby.driveencrypt.gallery.BaseGalleryAdapter
 import com.ruby.driveencrypt.gallery.GalleryItem
 import com.ruby.driveencrypt.utils.MediaUtils
@@ -18,7 +22,6 @@ class GalleryPagerAdapter : BaseGalleryAdapter() {
 
     var onTap: ((View, GalleryItem) -> Unit)? = null
     var onTapVideo: ((View, Uri) -> Unit)? = null
-
     override fun onBindViewHolder(
         holder: RecyclerView.ViewHolder,
         position: Int
@@ -45,10 +48,33 @@ class GalleryPagerAdapter : BaseGalleryAdapter() {
         galleryItem: GalleryItem
     ) {
         val imageView = holder.itemView.page_image
+        imageView.transitionName = galleryItem.path
 
         Glide.with(imageView)
             .load(uri)
             .thumbnail(0.33f)
+            .addListener(object : RequestListener<Drawable> {
+                override fun onLoadFailed(
+                    e: GlideException?,
+                    model: Any?,
+                    target: Target<Drawable>?,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    startPostponedEnterTransition()
+                    return false
+                }
+
+                override fun onResourceReady(
+                    resource: Drawable?,
+                    model: Any?,
+                    target: Target<Drawable>?,
+                    dataSource: DataSource?,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    startPostponedEnterTransition()
+                    return false
+                }
+            })
             .into(imageView)
 
         imageView.setOnClickListener { view ->

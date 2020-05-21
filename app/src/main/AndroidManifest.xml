@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <uses-feature
         android:name="android.hardware.camera"
@@ -36,17 +37,11 @@
         </provider>
 
         <activity
-            android:name=".gallery.pager.GalleryPagerActivity"
+            android:name=".gallery.pager.GalleryPagerFragment"
             android:theme="@style/Theme.ImageActivity" />
 
         <activity
             android:name=".MainActivity"
-            android:theme="@style/AppTheme">
-
-        </activity>
-
-        <activity
-            android:name=".lockscreen.LockScreenActivity"
             android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -54,7 +49,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".lockscreen.LockScreenActivity"
+            android:theme="@style/AppTheme">
+
+        </activity>
         <activity android:name=".gallery.pager.VideoActivity" />
+
+        <service
+            android:name=".SimpleJobIntentService"
+            android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
     </application>
 
 </manifest>
